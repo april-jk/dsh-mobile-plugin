@@ -22,6 +22,8 @@ test("publishes an installable DSH bundle manifest", async () => {
   );
   assert.match(client, /settings\.section/);
   assert.match(client, /dsh-mobile\/api\/state/);
+  assert.match(client, /dsh-mobile\/api\/access-sessions/);
+  assert.match(client, /访问时间线/);
   assert.match(patch, /name: dsh-mobile/);
   assert.match(patch, /inject: \[webStartup, webServer\]/);
   assert.match(patch, /dsh-host-directory-picker-browse/);

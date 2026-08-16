@@ -26,6 +26,17 @@ export type RemoteAccessState = {
   pairing: PairingView | null;
 };
 
+export type AccessSession = {
+  id: string;
+  deviceLabel: string;
+  platform: "ios" | "android" | "other";
+  osVersion: string | null;
+  startedAt: number;
+  lastSeenAt: number;
+  expiresAt: number;
+  status: "active" | "expired" | "ended";
+};
+
 type RelayConnection = {
   start(): Promise<void>;
   stop(): void;
@@ -38,6 +49,7 @@ type Dependencies = {
   createClient: (config: Config) => RelayConnection;
   probeDsh: (port: number) => Promise<boolean>;
   pollIntervalMs: number;
+  requestAccessSessions: (config: Config) => Promise<AccessSession[]>;
 };
 
 async function post(url: string, data: unknown) {
@@ -60,12 +72,29 @@ async function probeDsh(port: number) {
   }
 }
 
+async function requestAccessSessions(config: Config) {
+  if (!config.deviceId || !config.deviceToken) return [];
+  const response = await fetch(
+    `${config.relay}/device-management/${encodeURIComponent(config.deviceId)}/access-sessions?limit=50`,
+    {
+      headers: { authorization: `Device ${config.deviceToken}` },
+      signal: AbortSignal.timeout(5000),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Relay rejected access log request (${response.status})`);
+  }
+  const body = (await response.json()) as { sessions?: AccessSession[] };
+  return Array.isArray(body.sessions) ? body.sessions : [];
+}
+
 const defaults: Dependencies = {
   request: post,
   save: saveConfig,
   createClient: (config) => new RelayClient(config),
   probeDsh,
   pollIntervalMs: 2000,
+  requestAccessSessions,
 };
 
 export class RemoteAccessManager {
@@ -121,6 +150,11 @@ export class RemoteAccessManager {
       this.schedulePoll(this.deps.pollIntervalMs);
     }
     return this.state();
+  }
+
+  async accessSessions(): Promise<AccessSession[]> {
+    if (!this.config.deviceToken || !this.config.deviceId) return [];
+    return this.deps.requestAccessSessions(this.config);
   }
 
   cancelPairing() {

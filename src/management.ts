@@ -32,6 +32,12 @@ export function createManagementHandler(manager: RemoteAccessManager) {
         });
       }
       if (
+        req.method === "GET" &&
+        path === "/dsh-mobile/api/access-sessions"
+      ) {
+        return json(res, 200, { sessions: await manager.accessSessions() });
+      }
+      if (
         isRemoteRequest(req) &&
         (req.method === "POST" || req.method === "DELETE")
       ) {

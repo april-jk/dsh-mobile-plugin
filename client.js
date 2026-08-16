@@ -27,7 +27,13 @@ window.__ModuleLoader__.load({
       .dshm-qr{width:180px;height:180px;background:#fff}.dshm-qr svg{display:block;width:100%;height:100%}
       .dshm-code{font-size:28px;font-weight:650;letter-spacing:0;font-variant-numeric:tabular-nums;margin:4px 0 8px}
       .dshm-error{color:#d04444;margin-top:14px}.dshm-note{color:var(--dsw-alias-label-secondary);margin-top:18px}
+      .dshm-log{margin-top:30px}.dshm-log-title{font-size:15px;font-weight:600;margin:0 0 10px}
+      .dshm-timeline{list-style:none;margin:0;padding:0;border-top:1px solid var(--dsw-alias-border-1)}
+      .dshm-entry{display:grid;grid-template-columns:minmax(130px,1fr) minmax(190px,1.4fr) auto;gap:16px;align-items:center;padding:13px 0;border-bottom:1px solid var(--dsw-alias-border-1)}
+      .dshm-device{font-weight:500}.dshm-meta,.dshm-time{color:var(--dsw-alias-label-secondary);font-size:13px}.dshm-time{text-align:right;white-space:nowrap}
+      .dshm-empty{color:var(--dsw-alias-label-secondary);padding:18px 0;border-top:1px solid var(--dsw-alias-border-1);border-bottom:1px solid var(--dsw-alias-border-1)}
       @media(max-width:620px){.dshm-head{display:block}.dshm-status{margin-top:10px}.dshm-grid{grid-template-columns:110px minmax(0,1fr)}.dshm-pair{grid-template-columns:1fr}.dshm-qr{width:min(220px,100%);height:auto;aspect-ratio:1}}
+      @media(max-width:620px){.dshm-entry{grid-template-columns:1fr auto}.dshm-time{grid-column:1/-1;text-align:left}}
     `;
     if (!document.querySelector('style[data-plugin-css="dsh-mobile"]')) {
       const style = document.createElement("style");
@@ -53,6 +59,8 @@ window.__ModuleLoader__.load({
       const [state, setState] = useState(null);
       const [busy, setBusy] = useState(false);
       const [error, setError] = useState("");
+      const [sessions, setSessions] = useState([]);
+      const [logError, setLogError] = useState("");
 
       const load = useCallback(async () => {
         try {
@@ -72,6 +80,26 @@ window.__ModuleLoader__.load({
         const timer = setInterval(() => void refresh(), 2000);
         return () => { active = false; clearInterval(timer); };
       }, [load]);
+
+      const loadSessions = useCallback(async () => {
+        try {
+          const response = await fetch("/dsh-mobile/api/access-sessions", { cache: "no-store" });
+          if (!response.ok) throw new Error(`访问日志请求失败 (${response.status})`);
+          const body = await response.json();
+          setSessions(Array.isArray(body.sessions) ? body.sessions : []);
+          setLogError("");
+        } catch (nextError) {
+          setLogError(nextError instanceof Error ? nextError.message : String(nextError));
+        }
+      }, []);
+
+      useEffect(() => {
+        let active = true;
+        const refresh = async () => { if (active) await loadSessions(); };
+        void refresh();
+        const timer = setInterval(() => void refresh(), 10000);
+        return () => { active = false; clearInterval(timer); };
+      }, [loadSessions]);
 
       const action = async (method) => {
         setBusy(true);
@@ -128,6 +156,22 @@ window.__ModuleLoader__.load({
         ),
         !state.localActionsAllowed && h("p", { className: "dshm-note" }, "远程访问时仅可查看状态。配对管理请在这台电脑上操作。"),
         error && h("p", { className: "dshm-error", role: "alert" }, error),
+        h("div", { className: "dshm-log" },
+          h("h3", { className: "dshm-log-title" }, "访问时间线"),
+          sessions.length === 0
+            ? h("div", { className: "dshm-empty" }, state.phase === "paired" ? "暂无手机访问记录" : "完成配对后显示访问记录")
+            : h("ol", { className: "dshm-timeline" }, sessions.map((session) =>
+                h("li", { className: "dshm-entry", key: session.id },
+                  h("div", null,
+                    h("div", { className: "dshm-device" }, session.deviceLabel),
+                    h("div", { className: "dshm-meta" }, [session.platform === "ios" ? "iOS" : session.platform === "android" ? "Android" : "其他设备", session.osVersion].filter(Boolean).join(" · ")),
+                  ),
+                  h("div", { className: "dshm-meta" }, `开始 ${new Date(session.startedAt).toLocaleString()} · 最后访问 ${new Date(session.lastSeenAt).toLocaleString()}`),
+                  h("div", { className: "dshm-time" }, session.status === "active" ? "活跃" : session.status === "expired" ? "已过期" : "已结束"),
+                ),
+              )),
+          logError && h("p", { className: "dshm-error", role: "alert" }, logError),
+        ),
       );
     }
 
