@@ -14,6 +14,19 @@ type Envelope = {
 function message(type: string, payload: any, channel?: string): Envelope {
   return { v: 1, type, channel, id: randomUUID(), ts: Date.now(), payload };
 }
+export function normalizeCloseCode(code: unknown): number | undefined {
+  if (typeof code !== "number") return undefined;
+  if (code === 1000 || code === 1001 || code === 1002 || code === 1003)
+    return code;
+  if (code >= 1007 && code <= 1014) return code;
+  if (code >= 3000 && code <= 4999) return code;
+  return undefined;
+}
+function closeSocket(socket: WebSocket, code: unknown, reason: unknown) {
+  const normalized = normalizeCloseCode(code);
+  if (normalized === undefined) socket.close();
+  else socket.close(normalized, String(reason ?? "").slice(0, 100));
+}
 
 export class RelayClient {
   private ws?: WebSocket;
@@ -127,9 +140,8 @@ export class RelayClient {
         });
     }
     if (msg.type === "ws_close") {
-      this.localSockets
-        .get(msg.channel ?? "")
-        ?.close(msg.payload.code ?? 1000, msg.payload.reason ?? "");
+      const socket = this.localSockets.get(msg.channel ?? "");
+      if (socket) closeSocket(socket, msg.payload.code, msg.payload.reason);
       this.localSockets.delete(msg.channel ?? "");
     }
   }
