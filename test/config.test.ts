@@ -1,17 +1,23 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { mkdtemp, stat } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { loadConfig, saveConfig } from '../src/config.js';
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdtemp, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { loadConfig, saveConfig } from "../src/config.js";
 
-test('persists credentials with owner-only permissions', async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'dsh-config-test-'));
-  const path = join(dir, 'nested', 'config.json');
+test("persists credentials with owner-only permissions", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "dsh-config-test-"));
+  const path = join(dir, "nested", "config.json");
   process.env.DSH_REMOTE_CONFIG = path;
-  await saveConfig({ deviceId: 'dev_test', deviceToken: 'secret', deviceName: 'Test Mac', relay: 'http://relay', dshPort: 3080 });
+  await saveConfig({
+    deviceId: "dev_test",
+    deviceToken: "secret",
+    deviceName: "Test Mac",
+    relay: "http://relay",
+    dshPort: 3080,
+  });
   const loaded = await loadConfig();
-  assert.equal(loaded.deviceToken, 'secret');
+  assert.equal(loaded.deviceToken, "secret");
   assert.equal((await stat(path)).mode & 0o777, 0o600);
   delete process.env.DSH_REMOTE_CONFIG;
 });

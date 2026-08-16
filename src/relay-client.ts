@@ -75,6 +75,17 @@ export class RelayClient {
     if (this.ws?.readyState === WebSocket.OPEN)
       this.ws.send(JSON.stringify(message(type, payload, channel)));
   }
+  private upstreamHeaders(input: Record<string, unknown>) {
+    const authority = `127.0.0.1:${this.config.dshPort}`;
+    const headers: Record<string, any> = { ...input, host: authority };
+    if (headers.origin) headers.origin = `http://${authority}`;
+    if (headers.referer) headers.referer = `http://${authority}/`;
+    delete headers.forwarded;
+    delete headers["x-forwarded-for"];
+    delete headers["x-forwarded-host"];
+    delete headers["x-forwarded-proto"];
+    return headers;
+  }
   private async checkHealth() {
     const before = this.health;
     try {
@@ -117,10 +128,7 @@ export class RelayClient {
   }
   private http(msg: Envelope) {
     const body = Buffer.from(msg.payload.bodyB64 ?? "", "base64");
-    const headers = {
-      ...(msg.payload.headers ?? {}),
-      host: `127.0.0.1:${this.config.dshPort}`,
-    };
+    const headers = this.upstreamHeaders(msg.payload.headers ?? {});
     delete headers["content-length"];
     const req = http.request(
       {
@@ -184,10 +192,7 @@ export class RelayClient {
   private openWs(msg: Envelope) {
     const channel = msg.channel ?? "";
     const url = `ws://127.0.0.1:${this.config.dshPort}${msg.payload.path}`;
-    const headers = {
-      ...(msg.payload.headers ?? {}),
-      host: `127.0.0.1:${this.config.dshPort}`,
-    };
+    const headers = this.upstreamHeaders(msg.payload.headers ?? {});
     const socket = new WebSocket(url, { headers });
     this.localSockets.set(channel, socket);
     socket.on("open", () => this.send("ws_open_ok", {}, channel));

@@ -1,0 +1,9 @@
+# Add the remote Companion to the DSH web profile. The Host plugin follows the
+# DSH process lifecycle and keeps every remote network connection outbound.
+- insert:
+    - id: dsh-mobile-remote
+      name: dsh-mobile-remote-companion
+      inject: [webStartup]
+      config:
+        relay: !!js process.env.DSH_RELAY ?? 'https://dsh-relay-production.up.railway.app'
+        dshPort: !!js ctx.webStartup.port ?? 3080
