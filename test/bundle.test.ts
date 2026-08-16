@@ -14,8 +14,16 @@ test("publishes an installable DSH bundle manifest", async () => {
   assert.equal(manifest.name, "dsh-mobile");
   assert.deepEqual(manifest.bin, { "dsh-mobile": "dist/cli.js" });
   assert.equal(manifest.dsh.bundle.patch, "./cordis.patch.yml");
+  assert.equal(manifest.exports["./client"], "./client.js");
+  assert.equal(manifest.dsh.client.platform, "web");
+  const client = await readFile(
+    new URL("../client.js", import.meta.url),
+    "utf8",
+  );
+  assert.match(client, /settings\.section/);
+  assert.match(client, /dsh-mobile\/api\/state/);
   assert.match(patch, /name: dsh-mobile/);
-  assert.match(patch, /inject: \[webStartup\]/);
+  assert.match(patch, /inject: \[webStartup, webServer\]/);
   assert.match(patch, /dsh-host-directory-picker-browse/);
   assert.match(patch, /dsh-client-ui-directory-picker-browse/);
 });

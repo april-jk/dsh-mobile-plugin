@@ -12,7 +12,7 @@
 
     - id: dsh-mobile
       name: dsh-mobile
-      inject: [webStartup]
+      inject: [webStartup, webServer]
       config:
         relay: !!js process.env.DSH_RELAY ?? 'https://dsh-relay-production.up.railway.app'
         dshPort: !!js ctx.webStartup.port ?? 3080

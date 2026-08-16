@@ -39,6 +39,9 @@ export class RelayClient {
   private localSockets = new Map<string, WebSocket>();
   private localRequests = new Map<string, http.ClientRequest>();
   constructor(private config: Config) {}
+  status() {
+    return { connected: this.authenticated, dsh: this.health };
+  }
   async start() {
     this.stopped = false;
     await this.checkHealth();
@@ -99,6 +102,8 @@ export class RelayClient {
     delete headers["x-forwarded-for"];
     delete headers["x-forwarded-host"];
     delete headers["x-forwarded-proto"];
+    delete headers["x-dsh-mobile-remote"];
+    headers["x-dsh-mobile-remote"] = "1";
     return headers;
   }
   private async checkHealth() {

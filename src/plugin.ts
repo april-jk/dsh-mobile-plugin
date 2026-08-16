@@ -1,7 +1,7 @@
 import z from "@deepseek-ai/schemastery";
 import { loadConfig, saveConfig } from "./config.js";
-import { pair } from "./pairing.js";
-import { RelayClient } from "./relay-client.js";
+import { registerManagementRoutes, WebServer } from "./management.js";
+import { RemoteAccessManager } from "./remote-access.js";
 
 export const name = "dsh-mobile";
 export const Config = z.object({
@@ -11,6 +11,7 @@ export const Config = z.object({
 
 type PluginConfig = { relay: string; dshPort: number };
 type PluginContext = {
+  webServer: WebServer;
   effect(
     callback: () => void | (() => void | Promise<void>),
     label?: string,
@@ -21,22 +22,26 @@ type PluginContext = {
 export function apply(ctx: PluginContext, pluginConfig: PluginConfig) {
   ctx.effect(() => {
     let disposed = false;
-    let client: RelayClient | undefined;
+    let manager: RemoteAccessManager | undefined;
+    let unregister: (() => void) | undefined;
 
     void (async () => {
       try {
-        let config = await loadConfig();
-        config = {
-          ...config,
+        const config = {
+          ...(await loadConfig()),
           relay: pluginConfig.relay,
           dshPort: pluginConfig.dshPort,
         };
         await saveConfig(config);
-        if (!config.deviceToken) config = await pair(config);
         if (disposed) return;
-        client = new RelayClient(config);
-        await client.start();
-        ctx.logger.info(`DSH mobile remote connected through ${config.relay}`);
+        manager = new RemoteAccessManager(config);
+        unregister = registerManagementRoutes(ctx.webServer, manager);
+        await manager.initialize();
+        ctx.logger.info(
+          config.deviceToken
+            ? `DSH mobile remote connecting through ${config.relay}`
+            : "DSH mobile remote is ready to pair in WebUI Settings",
+        );
       } catch (error) {
         ctx.logger.warn(
           error instanceof Error ? error : new Error(String(error)),
@@ -46,7 +51,8 @@ export function apply(ctx: PluginContext, pluginConfig: PluginConfig) {
 
     return () => {
       disposed = true;
-      client?.stop();
+      unregister?.();
+      manager?.dispose();
     };
   }, "dsh-mobile.lifecycle");
 }
