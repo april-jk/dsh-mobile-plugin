@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import { mkdtemp, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadConfig, saveConfig } from "../src/config.js";
+import { defaults, loadConfig, saveConfig } from "../src/config.js";
+
+test("uses the public Relay by default", () => {
+  assert.equal(defaults().relay, "https://relay.dshmobile.online");
+});
 
 test("persists credentials with owner-only permissions", async () => {
   const dir = await mkdtemp(join(tmpdir(), "dsh-config-test-"));

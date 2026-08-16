@@ -29,7 +29,7 @@ export async function saveConfig(config) {
 export function defaults() {
     return {
         deviceName: process.env.DSH_DEVICE_NAME ?? `${process.env.USER ?? "User"}'s Computer`,
-        relay: process.env.DSH_RELAY ?? "http://127.0.0.1:8787",
+        relay: process.env.DSH_RELAY ?? "https://relay.dshmobile.online",
         dshPort: Number(process.env.DSH_PORT ?? 3080),
     };
 }
