@@ -4,6 +4,8 @@ Access a local DeepSeek Harness Web UI from a paired phone through an outbound-o
 
 > **Community project:** this is an unofficial project, independently developed and maintained by the community. It is not reviewed, endorsed, or supported by DeepSeek.
 
+![DSH Mobile Remote settings inside DeepSeek Harness](docs/images/remote-access-settings.png)
+
 ## Compatibility
 
 The current release is tested against `@deepseek-ai/dsh@0.1.0-rc.6`. DeepSeek Harness is in Developer Preview and may introduce breaking plugin changes. CI pins this version so compatibility changes are explicit.
@@ -88,6 +90,8 @@ npm pack --dry-run
 The repository should use the `dsh-plugin` and `deepseek-harness` GitHub topics. A single-project post for the official plugin Discussion category can use:
 
 `DSH | DSH Mobile Remote | Access your local DSH Web UI from a paired phone`
+
+A ready-to-post project description is maintained in [`docs/SHOW-YOUR-PLUGIN.md`](docs/SHOW-YOUR-PLUGIN.md).
 
 ## License
 
