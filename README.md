@@ -1,5 +1,7 @@
 # DSH Mobile Remote
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 Access a local DeepSeek Harness Web UI from a paired phone through an outbound-only Relay connection.
 
 > **Community project:** this is an unofficial project, independently developed and maintained by the community. It is not reviewed, endorsed, or supported by DeepSeek.
