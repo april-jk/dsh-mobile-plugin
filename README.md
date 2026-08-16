@@ -4,6 +4,8 @@ Access a local DeepSeek Harness Web UI from a paired phone through an outbound-o
 
 > **Community project:** this is an unofficial project, independently developed and maintained by the community. It is not reviewed, endorsed, or supported by DeepSeek.
 
+**Complete project, signed Android APK, and private Relay package:** [DSH Mobile Suite](https://github.com/april-jk/dsh-mobile-suite)
+
 ![DSH Mobile Remote settings inside DeepSeek Harness](docs/images/remote-access-settings.png)
 
 ## Compatibility

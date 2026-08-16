@@ -2,7 +2,11 @@
 
 > **Unofficial community project:** independently developed and maintained. This project is not reviewed, endorsed, or supported by DeepSeek.
 
-Project: https://github.com/april-jk/dsh-mobile-plugin
+Project: https://github.com/april-jk/dsh-mobile-suite
+
+Plugin source: https://github.com/april-jk/dsh-mobile-plugin
+
+Latest signed APK and deployment packages: https://github.com/april-jk/dsh-mobile-suite/releases/latest
 
 DSH Mobile Remote adds a **Remote Access** section to the DeepSeek Harness Web UI. A user can pair a phone with a six-digit code or QR code, open the computer's local DSH UI through an outbound-only Relay connection, submit normal DSH tasks, review phone access history, and revoke the pairing from the computer.
 
