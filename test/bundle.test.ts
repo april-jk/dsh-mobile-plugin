@@ -11,11 +11,17 @@ test("publishes an installable DSH bundle manifest", async () => {
     new URL("../cordis.patch.yml", import.meta.url),
     "utf8",
   );
-  assert.equal(manifest.name, "dsh-mobile");
+  assert.equal(manifest.name, "@april-jk/dsh-mobile");
   assert.deepEqual(manifest.bin, { "dsh-mobile": "dist/cli.js" });
   assert.equal(manifest.dsh.bundle.patch, "./cordis.patch.yml");
   assert.equal(manifest.exports["./client"], "./client.js");
   assert.equal(manifest.dsh.client.platform, "web");
+  assert.equal(manifest.scripts.prepack, "npm run build");
+  assert.equal(manifest.license, "MIT");
+  assert.equal(
+    manifest.repository.url,
+    "git+https://github.com/april-jk/dsh-mobile-plugin.git",
+  );
   const client = await readFile(
     new URL("../client.js", import.meta.url),
     "utf8",
@@ -25,7 +31,7 @@ test("publishes an installable DSH bundle manifest", async () => {
   assert.match(client, /dsh-mobile\/api\/access-sessions/);
   assert.match(client, /访问时间线/);
   assert.match(client, /移除配对/);
-  assert.match(patch, /name: dsh-mobile/);
+  assert.match(patch, /name: '@april-jk\/dsh-mobile'/);
   assert.match(patch, /inject: \[webStartup, webServer\]/);
   assert.match(patch, /dsh-host-directory-picker-browse/);
   assert.match(patch, /dsh-client-ui-directory-picker-browse/);
