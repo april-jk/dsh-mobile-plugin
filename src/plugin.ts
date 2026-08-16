@@ -3,7 +3,7 @@ import { loadConfig, saveConfig } from "./config.js";
 import { pair } from "./pairing.js";
 import { RelayClient } from "./relay-client.js";
 
-export const name = "dsh-mobile-remote";
+export const name = "dsh-mobile";
 export const Config = z.object({
   relay: z.string().required(),
   dshPort: z.natural().max(65535).required(),
@@ -48,5 +48,5 @@ export function apply(ctx: PluginContext, pluginConfig: PluginConfig) {
       disposed = true;
       client?.stop();
     };
-  }, "dsh-mobile-remote.lifecycle");
+  }, "dsh-mobile.lifecycle");
 }

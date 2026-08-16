@@ -5,7 +5,7 @@ import { pair } from "./pairing.js";
 import { RelayClient } from "./relay-client.js";
 
 const program = new Command()
-  .name("dsh-mobile-remote")
+  .name("dsh-mobile")
   .description("Remote companion for DeepSeek Harness")
   .version("0.1.0");
 program

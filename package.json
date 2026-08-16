@@ -1,5 +1,5 @@
 {
-  "name": "dsh-mobile-remote-companion",
+  "name": "dsh-mobile",
   "version": "0.1.0",
   "description": "Installable DSH bundle and remote companion for mobile access",
   "type": "module",
@@ -13,7 +13,7 @@
     "./cordis.patch.yml": "./cordis.patch.yml"
   },
   "bin": {
-    "dsh-mobile-remote": "dist/cli.js"
+    "dsh-mobile": "dist/cli.js"
   },
   "files": [
     "dist",
