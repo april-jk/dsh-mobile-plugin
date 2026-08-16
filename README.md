@@ -70,6 +70,12 @@ The same settings page can remove the pairing. Removal revokes the Relay device 
 - The Relay records bounded phone metadata and access times for the access timeline. It does not persist DSH request or response bodies.
 - Installing this bundle disables DSH's native directory picker and enables the browser-based picker so remote browsers can choose a directory without opening Finder or another native dialog.
 
+For a private Relay, start DSH with the same HTTPS origin configured in the mobile app:
+
+```bash
+DSH_RELAY=https://relay.example.com dsh web
+```
+
 ## Standalone commands
 
 The fallback CLI is installed as `dsh-mobile` and supports `start`, `pair`, `status`, and `unpair`. Normal users should manage pairing through the DSH settings page.
