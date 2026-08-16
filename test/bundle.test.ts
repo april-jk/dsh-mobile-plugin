@@ -45,3 +45,15 @@ test("rejects WebSocket close codes reserved by the protocol", () => {
   assert.equal(normalizeCloseCode(1006), undefined);
   assert.equal(normalizeCloseCode(4001), 4001);
 });
+
+test("documents a path-free official DSH install command", async () => {
+  const readme = await readFile(
+    new URL("../README.md", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    readme,
+    /npx @deepseek-ai\/dsh plugin --profile web add "github:april-jk\/dsh-mobile-plugin#v0\.1\.2"/,
+  );
+  assert.doesNotMatch(readme, /\/absolute\/path/);
+});

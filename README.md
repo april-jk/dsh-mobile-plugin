@@ -23,40 +23,42 @@ Requirements:
 
 ## Install
 
-The immutable GitHub tag is the recommended public installation path:
+The immutable GitHub tag is the recommended public installation path. It requires neither a global DSH installation nor a local plugin directory:
 
 ```bash
-dsh plugin --profile web add github:april-jk/dsh-mobile-plugin#v0.1.2
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.2"
+npx @deepseek-ai/dsh web
 ```
 
-Each GitHub Release also contains a prebuilt `.tgz`. It can be downloaded and installed without running a source build:
+Each GitHub Release also contains a prebuilt `.tgz`. DSH can install it directly from its release URL without a manual download or local path:
 
 ```bash
-dsh plugin --profile web add ./april-jk-dsh-mobile-0.1.2.tgz
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.2/april-jk-dsh-mobile-0.1.2.tgz"
+npx @deepseek-ai/dsh web
 ```
 
-Once the public npm package is available, the equivalent registry install is:
+The package metadata is ready for npm, but `@april-jk/dsh-mobile` is not yet published to the public npm registry. After its first npm release, the registry command will be:
 
 ```bash
-dsh plugin --profile web add @april-jk/dsh-mobile@0.1.2
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add "@april-jk/dsh-mobile@<published-version>"
+npx @deepseek-ai/dsh web
 ```
 
 To uninstall:
 
 ```bash
-dsh plugin --profile web remove @april-jk/dsh-mobile
+npx @deepseek-ai/dsh plugin --profile web remove @april-jk/dsh-mobile
 ```
 
-For local development:
+For local development, clone the repository and let the shell supply its current path:
 
 ```bash
+git clone https://github.com/april-jk/dsh-mobile-plugin.git
+cd dsh-mobile-plugin
 npm ci
 npm run build
-dsh plugin --profile web add "/absolute/path/to/dsh-mobile-plugin"
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add "$PWD"
+npx @deepseek-ai/dsh web
 ```
 
 ## Pair a phone
@@ -77,7 +79,7 @@ The same settings page can remove the pairing. Removal revokes the Relay device 
 For a private Relay, start DSH with the same HTTPS origin configured in the mobile app:
 
 ```bash
-DSH_RELAY=https://relay.example.com dsh web
+DSH_RELAY=https://relay.example.com npx @deepseek-ai/dsh web
 ```
 
 ## Standalone commands

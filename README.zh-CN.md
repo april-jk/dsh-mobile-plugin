@@ -23,40 +23,42 @@
 
 ## 安装
 
-推荐通过不可变的 GitHub Tag 公开安装：
+推荐通过不可变的 GitHub Tag 公开安装。该方式不要求全局安装 DSH，也不需要本地插件目录：
 
 ```bash
-dsh plugin --profile web add github:april-jk/dsh-mobile-plugin#v0.1.2
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.2"
+npx @deepseek-ai/dsh web
 ```
 
-每个 GitHub Release 也包含预构建 `.tgz`，无需运行源码构建即可下载并安装：
+每个 GitHub Release 也包含预构建 `.tgz`。DSH 可以直接从 Release URL 安装，不需要手动下载或填写本地路径：
 
 ```bash
-dsh plugin --profile web add ./april-jk-dsh-mobile-0.1.2.tgz
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.2/april-jk-dsh-mobile-0.1.2.tgz"
+npx @deepseek-ai/dsh web
 ```
 
-公开 npm 包可用后，对应的 Registry 安装命令是：
+包元数据已经为 npm 准备好，但 `@april-jk/dsh-mobile` 目前尚未发布到公共 npm Registry。完成首次 npm 发布后，安装命令将是：
 
 ```bash
-dsh plugin --profile web add @april-jk/dsh-mobile@0.1.2
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add "@april-jk/dsh-mobile@<published-version>"
+npx @deepseek-ai/dsh web
 ```
 
 卸载命令：
 
 ```bash
-dsh plugin --profile web remove @april-jk/dsh-mobile
+npx @deepseek-ai/dsh plugin --profile web remove @april-jk/dsh-mobile
 ```
 
-本地开发安装：
+本地开发时，克隆仓库并让 Shell 自动传入当前目录：
 
 ```bash
+git clone https://github.com/april-jk/dsh-mobile-plugin.git
+cd dsh-mobile-plugin
 npm ci
 npm run build
-dsh plugin --profile web add "/absolute/path/to/dsh-mobile-plugin"
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add "$PWD"
+npx @deepseek-ai/dsh web
 ```
 
 ## 配对手机
@@ -77,7 +79,7 @@ dsh web
 使用私有 Relay 时，电脑端必须指向移动应用中配置的同一 HTTPS Origin：
 
 ```bash
-DSH_RELAY=https://relay.example.com dsh web
+DSH_RELAY=https://relay.example.com npx @deepseek-ai/dsh web
 ```
 
 ## 独立命令
