@@ -24,6 +24,7 @@ export class RelayClient {
   private heartbeat?: NodeJS.Timeout;
   private healthTimer?: NodeJS.Timeout;
   private localSockets = new Map<string, WebSocket>();
+  private localRequests = new Map<string, http.ClientRequest>();
   constructor(private config: Config) {}
   async start() {
     this.stopped = false;
@@ -37,6 +38,7 @@ export class RelayClient {
     clearInterval(this.healthTimer);
     this.ws?.close();
     for (const socket of this.localSockets.values()) socket.close();
+    for (const request of this.localRequests.values()) request.destroy();
   }
   private relayWsUrl() {
     const url = new URL(this.config.relay);
@@ -111,6 +113,11 @@ export class RelayClient {
       return;
     }
     if (msg.type === "http_req") return this.http(msg);
+    if (msg.type === "http_close") {
+      this.localRequests.get(msg.channel ?? "")?.destroy();
+      this.localRequests.delete(msg.channel ?? "");
+      return;
+    }
     if (msg.type === "ws_open") return this.openWs(msg);
     if (msg.type === "ws_frame") {
       const socket = this.localSockets.get(msg.channel ?? "");
@@ -127,6 +134,7 @@ export class RelayClient {
     }
   }
   private http(msg: Envelope) {
+    const channel = msg.channel ?? "";
     const body = Buffer.from(msg.payload.bodyB64 ?? "", "base64");
     const headers = this.upstreamHeaders(msg.payload.headers ?? {});
     delete headers["content-length"];
@@ -139,41 +147,45 @@ export class RelayClient {
         headers,
       },
       (res) => {
-        const chunks: Buffer[] = [];
-        let size = 0;
+        let seq = 0;
+        const responseHeaders: Record<string, any> = { ...res.headers };
+        delete responseHeaders["content-length"];
+        delete responseHeaders["transfer-encoding"];
+        this.send(
+          "http_res",
+          {
+            status: res.statusCode ?? 502,
+            headers: responseHeaders,
+            bodyB64: "",
+            seq: seq++,
+            final: false,
+          },
+          channel,
+        );
         res.on("data", (chunk) => {
-          size += chunk.length;
-          if (size <= 1024 * 1024) chunks.push(chunk);
-        });
-        res.on("end", () => {
-          if (size > 1024 * 1024)
-            return this.send(
-              "http_res",
-              {
-                status: 502,
-                headers: { "content-type": "application/json" },
-                bodyB64: Buffer.from(
-                  JSON.stringify({ error: "response_too_large" }),
-                ).toString("base64"),
-              },
-              msg.channel,
-            );
-          const responseHeaders: Record<string, any> = { ...res.headers };
-          delete responseHeaders["content-length"];
-          delete responseHeaders["transfer-encoding"];
           this.send(
             "http_res",
             {
-              status: res.statusCode ?? 502,
-              headers: responseHeaders,
-              bodyB64: Buffer.concat(chunks).toString("base64"),
+              bodyB64: Buffer.from(chunk).toString("base64"),
+              seq: seq++,
+              final: false,
             },
-            msg.channel,
+            channel,
           );
+        });
+        res.on("end", () => {
+          this.send(
+            "http_res",
+            { bodyB64: "", seq: seq++, final: true },
+            channel,
+          );
+          this.localRequests.delete(channel);
         });
       },
     );
-    req.on("error", () =>
+    this.localRequests.set(channel, req);
+    req.on("error", () => {
+      this.localRequests.delete(channel);
       this.send(
         "http_res",
         {
@@ -182,10 +194,11 @@ export class RelayClient {
           bodyB64: Buffer.from(
             JSON.stringify({ error: "dsh_unreachable" }),
           ).toString("base64"),
+          final: true,
         },
-        msg.channel,
-      ),
-    );
+        channel,
+      );
+    });
     if (body.length) req.write(body);
     req.end();
   }
