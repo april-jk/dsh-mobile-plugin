@@ -26,6 +26,7 @@ test("publishes an installable DSH bundle manifest", async () => {
     new URL("../client.js", import.meta.url),
     "utf8",
   );
+  assert.match(client, /id: "@april-jk\/dsh-mobile"/);
   assert.match(client, /settings\.section/);
   assert.match(client, /dsh-mobile\/api\/state/);
   assert.match(client, /dsh-mobile\/api\/access-sessions/);

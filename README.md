@@ -20,21 +20,21 @@ Requirements:
 The immutable GitHub tag is the recommended public installation path:
 
 ```bash
-dsh plugin --profile web add github:april-jk/dsh-mobile-plugin#v0.1.0
+dsh plugin --profile web add github:april-jk/dsh-mobile-plugin#v0.1.1
 dsh web
 ```
 
 Each GitHub Release also contains a prebuilt `.tgz`. It can be downloaded and installed without running a source build:
 
 ```bash
-dsh plugin --profile web add ./april-jk-dsh-mobile-0.1.0.tgz
+dsh plugin --profile web add ./april-jk-dsh-mobile-0.1.1.tgz
 dsh web
 ```
 
 Once the public npm package is available, the equivalent registry install is:
 
 ```bash
-dsh plugin --profile web add @april-jk/dsh-mobile@0.1.0
+dsh plugin --profile web add @april-jk/dsh-mobile@0.1.1
 dsh web
 ```
 

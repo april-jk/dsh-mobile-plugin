@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: "dsh-mobile",
+  id: "@april-jk/dsh-mobile",
   factory: (require) => {
     var module = { exports: {} };
     var exports = module.exports;
