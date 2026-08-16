@@ -14,5 +14,5 @@
       name: '@april-jk/dsh-mobile'
       inject: [webStartup, webServer]
       config:
-        relay: !!js process.env.DSH_RELAY ?? 'https://dsh-relay-production.up.railway.app'
+        relay: !!js process.env.DSH_RELAY ?? 'https://relay.dshmobile.online'
         dshPort: !!js ctx.webStartup.port ?? 3080

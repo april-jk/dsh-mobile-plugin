@@ -24,21 +24,21 @@ Requirements:
 The immutable GitHub tag is the recommended public installation path:
 
 ```bash
-dsh plugin --profile web add github:april-jk/dsh-mobile-plugin#v0.1.1
+dsh plugin --profile web add github:april-jk/dsh-mobile-plugin#v0.1.2
 dsh web
 ```
 
 Each GitHub Release also contains a prebuilt `.tgz`. It can be downloaded and installed without running a source build:
 
 ```bash
-dsh plugin --profile web add ./april-jk-dsh-mobile-0.1.1.tgz
+dsh plugin --profile web add ./april-jk-dsh-mobile-0.1.2.tgz
 dsh web
 ```
 
 Once the public npm package is available, the equivalent registry install is:
 
 ```bash
-dsh plugin --profile web add @april-jk/dsh-mobile@0.1.1
+dsh plugin --profile web add @april-jk/dsh-mobile@0.1.2
 dsh web
 ```
 
@@ -66,7 +66,7 @@ The same settings page can remove the pairing. Removal revokes the Relay device 
 ## Network and data behavior
 
 - DSH remains bound to `127.0.0.1:3080`; the plugin never creates a public listener.
-- The computer opens an outbound WSS connection to `https://dsh-relay-production.up.railway.app` by default. Set `DSH_RELAY` before starting DSH to use another compatible Relay.
+- The computer opens an outbound WSS connection to `https://relay.dshmobile.online` by default. Set `DSH_RELAY` before starting DSH to use another compatible Relay.
 - The Relay forwards authenticated HTTP and WebSocket traffic. MVP traffic is protected by TLS but does not yet have application-level end-to-end encryption.
 - The plugin stores its Relay device token locally in `~/.dsh-remote/config.json` and never sends that token to the mobile client.
 - The Relay records bounded phone metadata and access times for the access timeline. It does not persist DSH request or response bodies.

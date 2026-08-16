@@ -24,7 +24,7 @@ DSH Mobile Remote adds a **Remote Access** section to the DeepSeek Harness Web U
 ## Install
 
 ```bash
-dsh plugin --profile web add github:april-jk/dsh-mobile-plugin#v0.1.1
+dsh plugin --profile web add github:april-jk/dsh-mobile-plugin#v0.1.2
 dsh web
 ```
 

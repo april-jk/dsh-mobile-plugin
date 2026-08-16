@@ -34,6 +34,7 @@ test("publishes an installable DSH bundle manifest", async () => {
   assert.match(client, /移除配对/);
   assert.match(patch, /name: '@april-jk\/dsh-mobile'/);
   assert.match(patch, /inject: \[webStartup, webServer\]/);
+  assert.match(patch, /https:\/\/relay\.dshmobile\.online/);
   assert.match(patch, /dsh-host-directory-picker-browse/);
   assert.match(patch, /dsh-client-ui-directory-picker-browse/);
 });
