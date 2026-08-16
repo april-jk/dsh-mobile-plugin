@@ -16,6 +16,7 @@ test("publishes an installable DSH bundle manifest", async () => {
   assert.match(patch, /name: dsh-mobile-remote-companion/);
   assert.match(patch, /inject: \[webStartup\]/);
   assert.match(patch, /dsh-host-directory-picker-browse/);
+  assert.match(patch, /dsh-client-ui-directory-picker-browse/);
 });
 
 test("rejects WebSocket close codes reserved by the protocol", () => {
