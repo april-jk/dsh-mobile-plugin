@@ -21,7 +21,7 @@ window.__ModuleLoader__.load({
       .dshm-value{overflow-wrap:anywhere}
       .dshm-actions{display:flex;align-items:center;gap:10px;margin-top:22px;flex-wrap:wrap}
       .dshm-button{height:36px;border:1px solid var(--dsw-alias-border-1);border-radius:8px;padding:0 16px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;white-space:nowrap}
-      .dshm-button.primary{border-color:#137fec;background:#137fec;color:white}.dshm-button:disabled{opacity:.5;cursor:default}
+      .dshm-button.primary{border-color:#137fec;background:#137fec;color:white}.dshm-button.danger{border-color:#d04444;color:#d04444}.dshm-button:disabled{opacity:.5;cursor:default}
       .dshm-button:not(:disabled):active{transform:translateY(1px)}
       .dshm-pair{display:grid;grid-template-columns:180px minmax(0,1fr);gap:24px;align-items:center;margin-top:20px;padding:20px;border:1px solid var(--dsw-alias-border-1);border-radius:8px}
       .dshm-qr{width:180px;height:180px;background:#fff}.dshm-qr svg{display:block;width:100%;height:100%}
@@ -109,6 +109,7 @@ window.__ModuleLoader__.load({
           const body = await response.json();
           if (!response.ok) throw new Error(body.message || body.reason || `操作失败 (${response.status})`);
           setState((previous) => ({ ...previous, ...body }));
+          if (body.phase === "unpaired") setSessions([]);
         } catch (nextError) {
           setError(nextError instanceof Error ? nextError.message : String(nextError));
         } finally {
@@ -153,6 +154,14 @@ window.__ModuleLoader__.load({
         state.localActionsAllowed && h("div", { className: "dshm-actions" },
           state.phase === "unpaired" && h("button", { className: "dshm-button primary", type: "button", disabled: busy, onClick: () => void action("POST") }, busy ? "正在创建…" : "生成配对码"),
           state.phase === "pairing" && h("button", { className: "dshm-button", type: "button", disabled: busy, onClick: () => void action("DELETE") }, "取消配对"),
+          state.phase === "paired" && h("button", {
+            className: "dshm-button danger",
+            type: "button",
+            disabled: busy,
+            onClick: () => {
+              if (window.confirm("移除配对后，手机将无法远程访问这台电脑。再次使用时需要重新扫码配对。")) void action("DELETE");
+            },
+          }, busy ? "正在移除…" : "移除配对"),
         ),
         !state.localActionsAllowed && h("p", { className: "dshm-note" }, "远程访问时仅可查看状态。配对管理请在这台电脑上操作。"),
         error && h("p", { className: "dshm-error", role: "alert" }, error),

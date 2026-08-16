@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { loadConfig, saveConfig } from "./config.js";
 import { pair } from "./pairing.js";
 import { RelayClient } from "./relay-client.js";
+import { RemoteAccessManager } from "./remote-access.js";
 
 const program = new Command()
   .name("dsh-mobile")
@@ -69,17 +70,16 @@ program
   });
 program
   .command("unpair")
-  .description("Forget the local device credential")
+  .description("Remove this computer's pairing and revoke its credential")
   .action(async () => {
     const config = await loadConfig();
-    await saveConfig({
-      deviceName: config.deviceName,
-      relay: config.relay,
-      dshPort: config.dshPort,
-    });
-    console.log(
-      "Local pairing credentials removed. Also unbind the device in the mobile app to revoke the server credential.",
-    );
+    const manager = new RemoteAccessManager(config);
+    try {
+      await manager.removePairing();
+      console.log("Pairing removed and device credential revoked.");
+    } finally {
+      manager.dispose();
+    }
   });
 program.parseAsync().catch((error) => {
   console.error(error instanceof Error ? error.message : error);

@@ -114,3 +114,67 @@ test("reads access sessions with Host-held device credentials", async () => {
   assert.doesNotMatch(JSON.stringify(sessions), /token_private/);
   manager.dispose();
 });
+
+test("revokes the Relay credential before clearing local pairing", async () => {
+  let stopped = 0;
+  let requestedToken: string | undefined;
+  let saved: Config | undefined;
+  const manager = new RemoteAccessManager({
+    ...config,
+    deviceId: "dev_test",
+    deviceSecret: "secret_private",
+    deviceToken: "token_private",
+  }, {
+    createClient: () => ({
+      start: async () => undefined,
+      stop: () => { stopped += 1; },
+      status: () => ({ connected: true, dsh: true }),
+    }),
+    requestUnbind: async (received) => {
+      requestedToken = received.deviceToken;
+      return { status: 200, data: { ok: true } };
+    },
+    save: async (received) => { saved = received; },
+  });
+  await manager.initialize();
+
+  const state = await manager.removePairing();
+
+  assert.equal(requestedToken, "token_private");
+  assert.equal(stopped, 1);
+  assert.equal(state.phase, "unpaired");
+  assert.equal(state.deviceId, null);
+  assert.equal(saved?.deviceId, undefined);
+  assert.equal(saved?.deviceSecret, undefined);
+  assert.equal(saved?.deviceToken, undefined);
+  manager.dispose();
+});
+
+test("keeps local pairing when Relay unbind fails", async () => {
+  let stopped = 0;
+  let saves = 0;
+  const manager = new RemoteAccessManager({
+    ...config,
+    deviceId: "dev_test",
+    deviceToken: "token_private",
+  }, {
+    createClient: () => ({
+      start: async () => undefined,
+      stop: () => { stopped += 1; },
+      status: () => ({ connected: true, dsh: true }),
+    }),
+    requestUnbind: async () => ({ status: 503, data: {} }),
+    save: async () => { saves += 1; },
+  });
+  await manager.initialize();
+
+  await assert.rejects(
+    manager.removePairing(),
+    /Relay rejected unbind request \(503\)/,
+  );
+
+  assert.equal(stopped, 0);
+  assert.equal(saves, 0);
+  assert.equal((await manager.state()).phase, "paired");
+  manager.dispose();
+});

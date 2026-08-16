@@ -41,3 +41,41 @@ test("management mutations are local-only while state remains readable", async (
     await once(server, "close");
   }
 });
+
+test("local management can remove an active pairing", async () => {
+  let revokedToken: string | undefined;
+  let savedToken: string | undefined = "not-saved";
+  const manager = new RemoteAccessManager({
+    deviceId: "dev_test",
+    deviceToken: "token_private",
+    deviceName: "Test Mac",
+    relay: "https://relay.test",
+    dshPort: 3080,
+  }, {
+    requestUnbind: async (config) => {
+      revokedToken = config.deviceToken;
+      return { status: 200, data: { ok: true } };
+    },
+    save: async (config) => { savedToken = config.deviceToken; },
+    probeDsh: async () => true,
+  });
+  const server = createServer(createManagementHandler(manager));
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:${address.port}/dsh-mobile/api/pairing`,
+      { method: "DELETE" },
+    );
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).phase, "unpaired");
+    assert.equal(revokedToken, "token_private");
+    assert.equal(savedToken, undefined);
+  } finally {
+    manager.dispose();
+    server.close();
+    await once(server, "close");
+  }
+});

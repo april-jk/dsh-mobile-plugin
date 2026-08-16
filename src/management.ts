@@ -47,8 +47,7 @@ export function createManagementHandler(manager: RemoteAccessManager) {
         return json(res, 200, await manager.startPairing());
       }
       if (req.method === "DELETE" && path === "/dsh-mobile/api/pairing") {
-        manager.cancelPairing();
-        return json(res, 200, await manager.state());
+        return json(res, 200, await manager.removePairing());
       }
       return json(res, 404, { reason: "not_found" });
     } catch (error) {

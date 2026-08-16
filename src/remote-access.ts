@@ -50,6 +50,9 @@ type Dependencies = {
   probeDsh: (port: number) => Promise<boolean>;
   pollIntervalMs: number;
   requestAccessSessions: (config: Config) => Promise<AccessSession[]>;
+  requestUnbind: (
+    config: Config,
+  ) => Promise<{ status: number; data: any }>;
 };
 
 async function post(url: string, data: unknown) {
@@ -88,6 +91,18 @@ async function requestAccessSessions(config: Config) {
   return Array.isArray(body.sessions) ? body.sessions : [];
 }
 
+async function requestUnbind(config: Config) {
+  const response = await fetch(
+    `${config.relay}/device-management/${encodeURIComponent(config.deviceId!)}/unbind`,
+    {
+      method: "POST",
+      headers: { authorization: `Device ${config.deviceToken}` },
+      signal: AbortSignal.timeout(5000),
+    },
+  );
+  return { status: response.status, data: (await response.json()) as any };
+}
+
 const defaults: Dependencies = {
   request: post,
   save: saveConfig,
@@ -95,6 +110,7 @@ const defaults: Dependencies = {
   probeDsh,
   pollIntervalMs: 2000,
   requestAccessSessions,
+  requestUnbind,
 };
 
 export class RemoteAccessManager {
@@ -161,6 +177,27 @@ export class RemoteAccessManager {
     this.pairing = undefined;
     clearTimeout(this.pollTimer);
     this.pollTimer = undefined;
+  }
+
+  async removePairing(): Promise<RemoteAccessState> {
+    if (this.pairing) {
+      this.cancelPairing();
+      return this.state();
+    }
+    if (!this.config.deviceId || !this.config.deviceToken) return this.state();
+    const unbound = await this.deps.requestUnbind(this.config);
+    if (unbound.status !== 200) {
+      throw new Error(`Relay rejected unbind request (${unbound.status})`);
+    }
+    this.client?.stop();
+    this.client = undefined;
+    this.config = {
+      deviceName: this.config.deviceName,
+      relay: this.config.relay,
+      dshPort: this.config.dshPort,
+    };
+    await this.deps.save(this.config);
+    return this.state();
   }
 
   dispose() {

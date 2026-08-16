@@ -20,7 +20,9 @@ dsh plugin --profile web remove dsh-mobile-remote-companion
 dsh plugin --profile web add "/absolute/path/to/dsh-plugin"
 ```
 
-The first `dsh web` start prints a six-digit code and QR code. Log in on the mobile app and claim it once. Later DSH starts reuse the credential stored in `~/.dsh-remote/config.json` with mode `0600`.
+Open **Settings > Remote Access** in the local DSH WebUI to generate a six-digit code and QR code. Log in on the mobile app and claim it once. Later DSH starts reuse the credential stored in `~/.dsh-remote/config.json` with mode `0600`.
+
+The same local settings page can remove the pairing. Removal revokes the Relay device credential, disconnects active remote access, and clears the local credential only after the Relay confirms the operation. The `dsh-mobile unpair` command provides the same behavior when the WebUI is unavailable.
 
 The bundle pins DSH's workspace selector to the in-browser directory picker, so remote browsers can choose a directory on the computer without opening a native Finder dialog.
 
