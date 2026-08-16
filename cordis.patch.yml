@@ -1,5 +1,8 @@
 # Add the remote Companion to the DSH web profile. The Host plugin follows the
 # DSH process lifecycle and keeps every remote network connection outbound.
+- id: directory-picker
+  name: '@deepseek-ai/dsh-host-directory-picker-browse'
+
 - insert:
     - id: dsh-mobile-remote
       name: dsh-mobile-remote-companion
