@@ -49,6 +49,9 @@ test("creates pairing state immediately and never exposes credentials", async ()
   assert.equal(state.phase, "pairing");
   assert.equal(state.pairing?.code, "123456");
   assert.match(state.pairing?.qrSvg ?? "", /^<svg/);
+  const qr = JSON.parse(state.pairing?.qrPayload ?? "{}");
+  assert.equal(qr.v, 2);
+  assert.equal(Buffer.from(qr.e2eeKey, "base64url").length, 32);
   assert.doesNotMatch(JSON.stringify(state), /secret_private|dev_private/);
   assert.equal(confirms, 0);
   manager.dispose();
@@ -124,6 +127,7 @@ test("revokes the Relay credential before clearing local pairing", async () => {
     deviceId: "dev_test",
     deviceSecret: "secret_private",
     deviceToken: "token_private",
+    e2eeMasterKey: "e2ee_private",
   }, {
     createClient: () => ({
       start: async () => undefined,
@@ -147,6 +151,7 @@ test("revokes the Relay credential before clearing local pairing", async () => {
   assert.equal(saved?.deviceId, undefined);
   assert.equal(saved?.deviceSecret, undefined);
   assert.equal(saved?.deviceToken, undefined);
+  assert.equal(saved?.e2eeMasterKey, undefined);
   manager.dispose();
 });
 

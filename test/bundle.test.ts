@@ -53,7 +53,7 @@ test("documents a path-free official DSH install command", async () => {
   );
   assert.match(
     readme,
-    /npx @deepseek-ai\/dsh plugin --profile web add "github:april-jk\/dsh-mobile-plugin#v0\.1\.2"/,
+    /npx @deepseek-ai\/dsh plugin --profile web add "github:april-jk\/dsh-mobile-plugin#v0\.1\.3"/,
   );
   assert.doesNotMatch(readme, /\/absolute\/path/);
 });

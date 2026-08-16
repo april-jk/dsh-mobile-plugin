@@ -6,6 +6,7 @@ export type Config = {
   deviceId?: string;
   deviceSecret?: string;
   deviceToken?: string;
+  e2eeMasterKey?: string;
   deviceName: string;
   relay: string;
   dshPort: number;

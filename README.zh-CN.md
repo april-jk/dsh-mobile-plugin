@@ -26,14 +26,14 @@
 推荐通过不可变的 GitHub Tag 公开安装。该方式不要求全局安装 DSH，也不需要本地插件目录：
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.2"
+npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.3"
 npx @deepseek-ai/dsh web
 ```
 
 每个 GitHub Release 也包含预构建 `.tgz`。DSH 可以直接从 Release URL 安装，不需要手动下载或填写本地路径：
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.2/april-jk-dsh-mobile-0.1.2.tgz"
+npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.3/april-jk-dsh-mobile-0.1.3.tgz"
 npx @deepseek-ai/dsh web
 ```
 

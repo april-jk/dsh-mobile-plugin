@@ -16,12 +16,14 @@ test("persists credentials with owner-only permissions", async () => {
   await saveConfig({
     deviceId: "dev_test",
     deviceToken: "secret",
+    e2eeMasterKey: "master-key",
     deviceName: "Test Mac",
     relay: "http://relay",
     dshPort: 3080,
   });
   const loaded = await loadConfig();
   assert.equal(loaded.deviceToken, "secret");
+  assert.equal(loaded.e2eeMasterKey, "master-key");
   assert.equal((await stat(path)).mode & 0o777, 0o600);
   delete process.env.DSH_REMOTE_CONFIG;
 });

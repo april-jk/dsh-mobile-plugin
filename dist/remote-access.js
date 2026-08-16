@@ -1,6 +1,7 @@
 import { saveConfig } from "./config.js";
 import { qrSvg } from "./qr.js";
 import { RelayClient } from "./relay-client.js";
+import { generateMasterKey } from "./e2ee.js";
 async function post(url, data) {
     const response = await fetch(url, {
         method: "POST",
@@ -94,7 +95,10 @@ export class RemoteAccessManager {
             if (created.status !== 201) {
                 throw new Error(`Relay rejected pairing session (${created.status})`);
             }
-            this.pairing = created.data;
+            this.pairing = {
+                ...created.data,
+                e2eeMasterKey: generateMasterKey(),
+            };
             this.schedulePoll(this.deps.pollIntervalMs);
         }
         return this.state();
@@ -138,9 +142,10 @@ export class RemoteAccessManager {
     }
     pairingView(session) {
         const qrPayload = JSON.stringify({
-            v: 1,
+            v: 2,
             relay: this.config.relay,
             code: session.code,
+            e2eeKey: session.e2eeMasterKey,
         });
         return {
             code: session.code,
@@ -175,6 +180,7 @@ export class RemoteAccessManager {
                     deviceId: session.deviceId,
                     deviceSecret: session.deviceSecret,
                     deviceToken: confirmed.data.deviceToken,
+                    e2eeMasterKey: session.e2eeMasterKey,
                 };
                 this.cancelPairing();
                 await this.deps.save(this.config);

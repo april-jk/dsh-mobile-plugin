@@ -26,14 +26,14 @@ Requirements:
 The immutable GitHub tag is the recommended public installation path. It requires neither a global DSH installation nor a local plugin directory:
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.2"
+npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.3"
 npx @deepseek-ai/dsh web
 ```
 
 Each GitHub Release also contains a prebuilt `.tgz`. DSH can install it directly from its release URL without a manual download or local path:
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.2/april-jk-dsh-mobile-0.1.2.tgz"
+npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.3/april-jk-dsh-mobile-0.1.3.tgz"
 npx @deepseek-ai/dsh web
 ```
 
