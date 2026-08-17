@@ -1,6 +1,7 @@
 import qrcode from "qrcode-terminal";
 import { Config, saveConfig } from "./config.js";
 import { generateMasterKey } from "./e2ee.js";
+import { pairingLink } from "./pair-link.js";
 
 async function post(url: string, data: unknown) {
   const response = await fetch(url, {
@@ -16,12 +17,7 @@ export async function pair(config: Config): Promise<Config> {
     throw new Error(`Relay rejected pairing session (${created.status})`);
   const { code, deviceId, deviceSecret } = created.data;
   const e2eeMasterKey = generateMasterKey();
-  const qr = JSON.stringify({
-    v: 2,
-    relay: config.relay,
-    code,
-    e2eeKey: e2eeMasterKey,
-  });
+  const qr = pairingLink(config.relay, code, e2eeMasterKey);
   console.log(`\nPairing code: ${code} (valid for 5 minutes)\n`);
   qrcode.generate(qr, { small: true }, (output) => console.log(output));
   console.log("Waiting for the mobile app to claim this code...");

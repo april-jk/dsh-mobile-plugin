@@ -63,7 +63,7 @@ npx @deepseek-ai/dsh web
 
 ## Pair a phone
 
-Open **Settings > Remote Access** in the local DSH Web UI and scan the version 2 QR code with the mobile app. The QR code transfers the one-time pairing data and the end-to-end encryption key; a six-digit code by itself is not sufficient in version 0.1.4. Later DSH starts reuse the device credential stored in `~/.dsh-remote/config.json` with owner-only permissions.
+Open **Settings > Remote Access** in the local DSH Web UI and scan the QR code with iPhone Camera or the mobile app. New QR codes open the Relay browser client directly; their one-time code and end-to-end encryption key stay in the URL fragment and are not sent in the page request. A six-digit code by itself is not sufficient. Later DSH starts reuse the device credential stored in `~/.dsh-remote/config.json` with owner-only permissions.
 
 The same settings page can remove the pairing. Removal revokes the Relay device credential, disconnects active remote access, and clears the local credential only after the Relay confirms the operation. The `dsh-mobile unpair` command provides the same behavior when the Web UI is unavailable.
 

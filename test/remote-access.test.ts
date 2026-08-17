@@ -49,9 +49,17 @@ test("creates pairing state immediately and never exposes credentials", async ()
   assert.equal(state.phase, "pairing");
   assert.equal(state.pairing?.code, "123456");
   assert.match(state.pairing?.qrSvg ?? "", /^<svg/);
-  const qr = JSON.parse(state.pairing?.qrPayload ?? "{}");
-  assert.equal(qr.v, 2);
-  assert.equal(Buffer.from(qr.e2eeKey, "base64url").length, 32);
+  const qr = new URL(state.pairing?.qrPayload ?? "https://invalid.test");
+  assert.equal(qr.origin, "https://relay.test");
+  assert.equal(qr.pathname, "/app/");
+  assert.equal(new URLSearchParams(qr.hash.split("?")[1]).get("code"), "123456");
+  assert.equal(
+    Buffer.from(
+      new URLSearchParams(qr.hash.split("?")[1]).get("key") ?? "",
+      "base64url",
+    ).length,
+    32,
+  );
   assert.doesNotMatch(JSON.stringify(state), /secret_private|dev_private/);
   assert.equal(confirms, 0);
   manager.dispose();

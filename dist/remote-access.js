@@ -1,5 +1,6 @@
 import { saveConfig } from "./config.js";
 import { qrSvg } from "./qr.js";
+import { pairingLink } from "./pair-link.js";
 import { RelayClient } from "./relay-client.js";
 import { generateMasterKey } from "./e2ee.js";
 async function post(url, data) {
@@ -141,12 +142,7 @@ export class RemoteAccessManager {
         this.client = undefined;
     }
     pairingView(session) {
-        const qrPayload = JSON.stringify({
-            v: 2,
-            relay: this.config.relay,
-            code: session.code,
-            e2eeKey: session.e2eeMasterKey,
-        });
+        const qrPayload = pairingLink(this.config.relay, session.code, session.e2eeMasterKey);
         return {
             code: session.code,
             expiresAt: session.expiresAt,

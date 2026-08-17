@@ -63,7 +63,7 @@ npx @deepseek-ai/dsh web
 
 ## 配对手机
 
-在本机 DSH Web UI 中打开 **Settings > Remote Access**，使用移动应用扫描 v2 二维码。二维码同时传递一次性配对信息和端到端加密密钥；在 0.1.4 版本中，仅输入六位配对码不足以完成安全配对。后续启动 DSH 时，会复用保存在 `~/.dsh-remote/config.json` 中的设备凭据；该文件仅允许当前用户读取。
+在本机 DSH Web UI 中打开 **Settings > Remote Access**，使用 iPhone 相机或移动应用扫描二维码。新二维码会直接打开 Relay 浏览器客户端；一次性配对码和端到端加密密钥位于 URL fragment 中，不会随页面请求发送给 Relay。仅输入六位配对码不足以完成安全配对。后续启动 DSH 时，会复用保存在 `~/.dsh-remote/config.json` 中的设备凭据；该文件仅允许当前用户读取。
 
 同一设置页可以移除配对。移除操作会撤销 Relay 设备凭据、断开正在进行的远程访问，并且只在 Relay 确认后清除本地凭据。Web UI 不可用时，可以执行 `dsh-mobile unpair` 完成相同操作。
 
