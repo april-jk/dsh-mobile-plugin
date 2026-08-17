@@ -39,6 +39,7 @@ jobs:
         run: |
           package_file="$(npm pack --silent)"
           test -f "$package_file"
+          sha256sum "$package_file" > SHA256SUMS
           echo "package_file=$package_file" >> "$GITHUB_OUTPUT"
       - name: Publish immutable install artifact
         env:
@@ -46,9 +47,25 @@ jobs:
           PACKAGE_FILE: ${{ steps.pack.outputs.package_file }}
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" "$PACKAGE_FILE" --clobber
+            expected_assets="$(printf '%s\n' "$PACKAGE_FILE" SHA256SUMS | sort)"
+            release_assets="$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name' | sort)"
+            if [[ "$release_assets" != "$expected_assets" ]]; then
+              echo "Release $GITHUB_REF_NAME has an unexpected asset set." >&2
+              diff -u <(printf '%s\n' "$expected_assets") <(printf '%s\n' "$release_assets") || true
+              exit 1
+            fi
+
+            download_dir="$(mktemp -d)"
+            trap 'rm -rf "$download_dir"' EXIT
+            gh release download "$GITHUB_REF_NAME" \
+              --dir "$download_dir" \
+              --pattern "$PACKAGE_FILE" \
+              --pattern SHA256SUMS
+            cmp "$PACKAGE_FILE" "$download_dir/$PACKAGE_FILE"
+            cmp SHA256SUMS "$download_dir/SHA256SUMS"
+            echo "Release assets already exist and are byte-for-byte identical."
           else
-            gh release create "$GITHUB_REF_NAME" "$PACKAGE_FILE" \
+            gh release create "$GITHUB_REF_NAME" "$PACKAGE_FILE" SHA256SUMS \
               --generate-notes \
               --title "$GITHUB_REF_NAME" \
               --verify-tag

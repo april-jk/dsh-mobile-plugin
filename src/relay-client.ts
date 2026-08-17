@@ -131,7 +131,7 @@ export class RelayClient {
             capabilities: this.config.e2eeMasterKey
               ? ["sealed-tunnel-v1"]
               : [],
-            version: "0.1.3",
+            version: "0.1.4",
           }),
         ),
       ),

@@ -26,14 +26,14 @@ Requirements:
 The immutable GitHub tag is the recommended public installation path. It requires neither a global DSH installation nor a local plugin directory:
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.3"
+npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.4"
 npx @deepseek-ai/dsh web
 ```
 
 Each GitHub Release also contains a prebuilt `.tgz`. DSH can install it directly from its release URL without a manual download or local path:
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.3/april-jk-dsh-mobile-0.1.3.tgz"
+npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.4/april-jk-dsh-mobile-0.1.4.tgz"
 npx @deepseek-ai/dsh web
 ```
 
@@ -63,7 +63,7 @@ npx @deepseek-ai/dsh web
 
 ## Pair a phone
 
-Open **Settings > Remote Access** in the local DSH Web UI and scan the version 2 QR code with the mobile app. The QR code transfers the one-time pairing data and the end-to-end encryption key; a six-digit code by itself is not sufficient in version 0.1.3. Later DSH starts reuse the device credential stored in `~/.dsh-remote/config.json` with owner-only permissions.
+Open **Settings > Remote Access** in the local DSH Web UI and scan the version 2 QR code with the mobile app. The QR code transfers the one-time pairing data and the end-to-end encryption key; a six-digit code by itself is not sufficient in version 0.1.4. Later DSH starts reuse the device credential stored in `~/.dsh-remote/config.json` with owner-only permissions.
 
 The same settings page can remove the pairing. Removal revokes the Relay device credential, disconnects active remote access, and clears the local credential only after the Relay confirms the operation. The `dsh-mobile unpair` command provides the same behavior when the Web UI is unavailable.
 
@@ -72,7 +72,7 @@ The same settings page can remove the pairing. Removal revokes the Relay device 
 - DSH remains bound to `127.0.0.1:3080`; the plugin never creates a public listener.
 - The computer opens an outbound WSS connection to `https://relay.dshmobile.online` by default. Set `DSH_RELAY` before starting DSH to use another compatible Relay.
 - HTTP, SSE, and WebSocket payloads are end-to-end encrypted between the mobile app and this Companion with AES-256-GCM. The Relay only forwards sealed frames; TLS additionally protects connection metadata in transit.
-- Version 0.1.3 uses a QR-provisioned pre-shared key and does not provide forward secrecy. Unpair a device and pair it again if the QR code or either endpoint may have been compromised.
+- Version 0.1.4 uses a QR-provisioned pre-shared key and does not provide forward secrecy. Unpair a device and pair it again if the QR code or either endpoint may have been compromised.
 - The plugin stores its Relay device token locally in `~/.dsh-remote/config.json` and never sends that token to the mobile client.
 - The Relay records bounded phone metadata and access times for the access timeline. It does not persist DSH request or response bodies.
 - Installing this bundle disables DSH's native directory picker and enables the browser-based picker so remote browsers can choose a directory without opening Finder or another native dialog.
@@ -98,7 +98,7 @@ npm pack --dry-run
 
 `dist/` is committed intentionally so GitHub installs have a complete plugin without lifecycle scripts. CI runs build, tests, bundle freshness checks, and an npm pack check on Node.js 18, 20, and 22. It also verifies installation against the pinned DSH Developer Preview.
 
-To publish a release, update `package.json` and `package-lock.json`, rebuild `dist/`, and push a tag that exactly matches `v<package.version>`. The tag workflow repeats all release checks, then creates or updates the GitHub Release with the prebuilt npm tarball. A mismatched tag fails before any artifact is uploaded.
+To publish a release, update `package.json` and `package-lock.json`, rebuild `dist/`, and push a tag that exactly matches `v<package.version>`. The tag workflow repeats all release checks, then creates an immutable GitHub Release with the prebuilt npm tarball and `SHA256SUMS`. A rerun succeeds only when the existing asset set and both asset contents are identical; it never overwrites an existing asset. A mismatched tag fails before any artifact is uploaded.
 
 npm publishing is disabled by default. Repository maintainers can opt in by setting the Actions variable `NPM_PUBLISH_ENABLED` to `true` and adding an `NPM_TOKEN` Actions secret with publish access to `@april-jk/dsh-mobile`. With either setting absent, GitHub Releases continue normally and no npm publish is attempted.
 

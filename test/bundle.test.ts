@@ -12,6 +12,7 @@ test("publishes an installable DSH bundle manifest", async () => {
     "utf8",
   );
   assert.equal(manifest.name, "@april-jk/dsh-mobile");
+  assert.equal(manifest.version, "0.1.4");
   assert.deepEqual(manifest.bin, { "dsh-mobile": "dist/cli.js" });
   assert.equal(manifest.dsh.bundle.patch, "./cordis.patch.yml");
   assert.equal(manifest.exports["./client"], "./client.js");
@@ -53,7 +54,19 @@ test("documents a path-free official DSH install command", async () => {
   );
   assert.match(
     readme,
-    /npx @deepseek-ai\/dsh plugin --profile web add "github:april-jk\/dsh-mobile-plugin#v0\.1\.3"/,
+    /npx @deepseek-ai\/dsh plugin --profile web add "github:april-jk\/dsh-mobile-plugin#v0\.1\.4"/,
   );
   assert.doesNotMatch(readme, /\/absolute\/path/);
+});
+
+test("keeps GitHub Release assets immutable across reruns", async () => {
+  const workflow = await readFile(
+    new URL("../.github/workflows/release.yml", import.meta.url),
+    "utf8",
+  );
+  assert.match(workflow, /sha256sum "\$package_file" > SHA256SUMS/);
+  assert.match(workflow, /release_assets=.*\.assets\[\]\.name/);
+  assert.match(workflow, /cmp "\$PACKAGE_FILE"/);
+  assert.match(workflow, /cmp SHA256SUMS/);
+  assert.doesNotMatch(workflow, /--clobber/);
 });
