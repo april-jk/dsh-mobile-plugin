@@ -1,2 +1,11 @@
 node_modules/
-.env
+.env*
+!.env.example
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+coverage/
+.dsh-remote/
+dsh-remote.config.json
