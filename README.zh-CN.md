@@ -63,7 +63,7 @@ npx @deepseek-ai/dsh web
 
 ## 配对手机
 
-在本机 DSH Web UI 中打开 **Settings > Remote Access**，生成六位配对码或二维码。登录移动应用并认领一次即可。后续启动 DSH 时，会复用保存在 `~/.dsh-remote/config.json` 中的设备凭据；该文件仅允许当前用户读取。
+在本机 DSH Web UI 中打开 **Settings > Remote Access**，使用移动应用扫描 v2 二维码。二维码同时传递一次性配对信息和端到端加密密钥；在 0.1.3 版本中，仅输入六位配对码不足以完成安全配对。后续启动 DSH 时，会复用保存在 `~/.dsh-remote/config.json` 中的设备凭据；该文件仅允许当前用户读取。
 
 同一设置页可以移除配对。移除操作会撤销 Relay 设备凭据、断开正在进行的远程访问，并且只在 Relay 确认后清除本地凭据。Web UI 不可用时，可以执行 `dsh-mobile unpair` 完成相同操作。
 
@@ -71,7 +71,8 @@ npx @deepseek-ai/dsh web
 
 - DSH 始终监听 `127.0.0.1:3080`；插件不会创建公网监听端口。
 - 电脑默认向 `https://relay.dshmobile.online` 建立出站 WSS 连接。启动 DSH 前设置 `DSH_RELAY` 可以使用其他兼容 Relay。
-- Relay 转发经过鉴权的 HTTP 和 WebSocket 流量。MVP 流量受 TLS 保护，但还没有应用层端到端加密。
+- HTTP、SSE 和 WebSocket 载荷由移动应用和本 Companion 使用 AES-256-GCM 进行端到端加密。Relay 只转发密封帧，TLS 额外保护传输中的连接元数据。
+- 0.1.3 使用二维码预置的共享密钥，不提供前向保密。如果二维码或任一端点可能泄露，请解除配对后重新配对。
 - 插件将 Relay 设备 Token 保存在本机 `~/.dsh-remote/config.json`，不会把该 Token 发送给移动端。
 - Relay 为访问时间线记录受限的手机元数据和访问时间，但不会持久化 DSH 请求体或响应体。
 - 安装本 Bundle 后会禁用 DSH 原生目录选择器，改用浏览器目录选择器，使远程浏览器无需打开 Finder 或其他原生对话框即可选择目录。
@@ -95,7 +96,11 @@ npm test
 npm pack --dry-run
 ```
 
-仓库有意提交 `dist/`，确保从 GitHub 安装时无需执行生命周期脚本即可获得完整插件。CI 会重新构建并拒绝过期的生成文件。推送匹配 `v*` 的 Tag 会创建包含预构建 npm tarball 的 GitHub Release。
+仓库有意提交 `dist/`，确保从 GitHub 安装时无需执行生命周期脚本即可获得完整插件。CI 会在 Node.js 18、20 和 22 上执行构建、测试、产物新鲜度检查及 npm 打包检查，并针对固定版本的 DSH Developer Preview 验证安装兼容性。
+
+发布时需要同步更新 `package.json` 与 `package-lock.json`、重新构建 `dist/`，然后推送与 `v<package.version>` 完全一致的 Tag。Tag 工作流会重复所有发布检查，再创建或更新 GitHub Release 并上传预构建 npm tarball。Tag 与包版本不一致时，会在上传任何产物前失败。
+
+npm 发布默认关闭。仓库维护者可以将 Actions 变量 `NPM_PUBLISH_ENABLED` 设置为 `true`，并添加拥有 `@april-jk/dsh-mobile` 发布权限的 `NPM_TOKEN` Actions Secret 来显式启用。缺少任一设置时，GitHub Release 仍会正常发布，工作流不会尝试 npm 发布。
 
 ## 社区发现
 

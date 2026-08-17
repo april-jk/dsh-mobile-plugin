@@ -10,11 +10,15 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
       - run: npm run build
@@ -22,6 +26,17 @@ jobs:
       - name: Verify committed bundle is current
         run: git diff --exit-code -- dist
       - run: npm pack --dry-run
+
+  dsh-compatibility:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
       - name: Verify current DSH Developer Preview compatibility
         run: |
           npm install --global pnpm@10.28.2
