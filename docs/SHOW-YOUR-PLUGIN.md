@@ -24,7 +24,7 @@ DSH Mobile Remote adds a **Remote Access** section to the DeepSeek Harness Web U
 ## Install
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.4"
+npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.5"
 npx @deepseek-ai/dsh web
 ```
 
@@ -32,4 +32,4 @@ Open **Settings > Remote Access** to pair the phone.
 
 ## MVP security scope
 
-Remote HTTP, SSE, and WebSocket payloads use AES-256-GCM end-to-end encryption between the mobile app and Companion, while HTTPS/WSS protects connection metadata in transit. The mobile client never receives the computer's device token. Version 0.1.4 uses a QR-provisioned pre-shared key without forward secrecy; this limitation and the Relay's bounded access metadata are documented in the repository.
+Remote HTTP, SSE, and WebSocket payloads use AES-256-GCM end-to-end encryption between the mobile app and Companion, while HTTPS/WSS protects connection metadata in transit. The mobile client never receives the computer's device token. Version 0.1.5 uses a QR-provisioned pre-shared key without forward secrecy; this limitation and the Relay's bounded access metadata are documented in the repository.

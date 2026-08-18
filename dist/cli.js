@@ -8,7 +8,7 @@ import { RemoteAccessManager } from "./remote-access.js";
 const program = new Command()
     .name("dsh-mobile")
     .description("Remote companion for DeepSeek Harness")
-    .version("0.1.4");
+    .version("0.1.5");
 program
     .command("pair")
     .description("Pair this computer with the mobile app")

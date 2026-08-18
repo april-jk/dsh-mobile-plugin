@@ -94,7 +94,7 @@ export class RelayClient {
             capabilities: this.config.e2eeMasterKey
                 ? ["sealed-tunnel-v1"]
                 : [],
-            version: "0.1.4",
+            version: "0.1.5",
         }))));
         ws.on("message", (raw) => {
             let value;
