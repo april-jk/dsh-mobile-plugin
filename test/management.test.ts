@@ -80,6 +80,37 @@ test("local management can remove an active pairing", async () => {
   }
 });
 
+test("browser access QR is local-only", async () => {
+  const manager = new RemoteAccessManager({
+    deviceId: "dev_test",
+    deviceToken: "token_private",
+    e2eeMasterKey: "browser_key_private",
+    deviceName: "Test Mac",
+    relay: "https://relay.test",
+    dshPort: 3080,
+  });
+  const server = createServer(createManagementHandler(manager));
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const base = `http://127.0.0.1:${address.port}`;
+  try {
+    const local = await fetch(`${base}/dsh-mobile/api/browser-access`);
+    assert.equal(local.status, 200);
+    assert.match((await local.json()).qrPayload, /web-pair/);
+    const remote = await fetch(`${base}/dsh-mobile/api/browser-access`, {
+      headers: { "x-dsh-mobile-remote": "1" },
+    });
+    assert.equal(remote.status, 403);
+    assert.equal((await remote.json()).reason, "local_management_required");
+  } finally {
+    manager.dispose();
+    server.close();
+    await once(server, "close");
+  }
+});
+
 test("remote file browser rejects path traversal and serves its UI", async () => {
   const manager = new RemoteAccessManager({
     deviceName: "Test Mac",

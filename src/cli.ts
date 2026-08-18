@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import qrcode from "qrcode-terminal";
 import { loadConfig, saveConfig } from "./config.js";
 import { pair } from "./pairing.js";
 import { RelayClient } from "./relay-client.js";
@@ -67,6 +68,24 @@ program
         2,
       ),
     );
+  });
+program
+  .command("web")
+  .description("Generate a browser access QR for an already paired computer")
+  .action(async () => {
+    const config = await loadConfig();
+    const manager = new RemoteAccessManager(config);
+    try {
+      const access = manager.browserAccess();
+      if (!access) {
+        throw new Error("This computer is not paired yet; run dsh-mobile pair first.");
+      }
+      console.log(`\nBrowser access for ${access.deviceName}:\n`);
+      qrcode.generate(access.qrPayload, { small: true }, (output) => console.log(output));
+      console.log(`\nOpen this link in a signed-in browser:\n${access.qrPayload}\n`);
+    } finally {
+      manager.dispose();
+    }
   });
 program
   .command("unpair")

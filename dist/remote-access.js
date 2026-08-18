@@ -1,6 +1,6 @@
 import { saveConfig } from "./config.js";
 import { qrSvg } from "./qr.js";
-import { pairingLink } from "./pair-link.js";
+import { browserAccessLink, pairingLink } from "./pair-link.js";
 import { RelayClient } from "./relay-client.js";
 import { generateMasterKey } from "./e2ee.js";
 async function post(url, data) {
@@ -108,6 +108,17 @@ export class RemoteAccessManager {
         if (!this.config.deviceToken || !this.config.deviceId)
             return [];
         return this.deps.requestAccessSessions(this.config);
+    }
+    browserAccess() {
+        if (!this.config.deviceId || !this.config.e2eeMasterKey)
+            return null;
+        const qrPayload = browserAccessLink(this.config.relay, this.config.deviceId, this.config.e2eeMasterKey);
+        return {
+            deviceId: this.config.deviceId,
+            deviceName: this.config.deviceName,
+            qrPayload,
+            qrSvg: qrSvg(qrPayload),
+        };
     }
     cancelPairing() {
         this.pairing = undefined;

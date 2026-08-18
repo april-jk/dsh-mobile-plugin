@@ -126,6 +126,30 @@ test("reads access sessions with Host-held device credentials", async () => {
   manager.dispose();
 });
 
+test("generates repeatable browser access from the paired local key", () => {
+  const manager = new RemoteAccessManager({
+    ...config,
+    deviceId: "dev_browser",
+    deviceToken: "token_private",
+    e2eeMasterKey: "browser_key_private",
+  });
+  const access = manager.browserAccess();
+  assert.equal(access?.deviceId, "dev_browser");
+  assert.match(access?.qrSvg ?? "", /^<svg/);
+  const url = new URL(access?.qrPayload ?? "https://invalid.test");
+  assert.equal(url.pathname, "/app/");
+  assert.match(url.hash, /^#\/web-pair\?/);
+  assert.equal(
+    new URLSearchParams(url.hash.slice(url.hash.indexOf("?") + 1)).get("device"),
+    "dev_browser",
+  );
+  assert.equal(
+    new URLSearchParams(url.hash.slice(url.hash.indexOf("?") + 1)).get("key"),
+    "browser_key_private",
+  );
+  manager.dispose();
+});
+
 test("revokes the Relay credential before clearing local pairing", async () => {
   let stopped = 0;
   let requestedToken: string | undefined;

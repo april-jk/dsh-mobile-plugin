@@ -90,6 +90,16 @@ export function createManagementHandler(manager) {
                 path === "/dsh-mobile/api/access-sessions") {
                 return json(res, 200, { sessions: await manager.accessSessions() });
             }
+            if (req.method === "GET" &&
+                path === "/dsh-mobile/api/browser-access") {
+                if (isRemoteRequest(req)) {
+                    return json(res, 403, { reason: "local_management_required" });
+                }
+                const access = manager.browserAccess();
+                return access
+                    ? json(res, 200, access)
+                    : json(res, 409, { reason: "not_paired" });
+            }
             if (isRemoteRequest(req) &&
                 (req.method === "POST" || req.method === "DELETE")) {
                 return json(res, 403, { reason: "local_management_required" });
