@@ -1,6 +1,7 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { relative, resolve, sep } from "node:path";
+import { PluginUpdater } from "./updater.js";
 function json(res, status, body) {
     res.writeHead(status, {
         "content-type": "application/json; charset=utf-8",
@@ -67,7 +68,7 @@ async function handleFiles(req, res) {
 export function isRemoteRequest(req) {
     return req.headers["x-dsh-mobile-remote"] === "1";
 }
-export function createManagementHandler(manager) {
+export function createManagementHandler(manager, updater = new PluginUpdater()) {
     return async (req, res) => {
         const path = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
         try {
@@ -90,6 +91,9 @@ export function createManagementHandler(manager) {
                 path === "/dsh-mobile/api/access-sessions") {
                 return json(res, 200, { sessions: await manager.accessSessions() });
             }
+            if (req.method === "GET" && path === "/dsh-mobile/api/update") {
+                return json(res, 200, await updater.check());
+            }
             if (req.method === "GET" &&
                 path === "/dsh-mobile/api/browser-access") {
                 if (isRemoteRequest(req)) {
@@ -107,6 +111,9 @@ export function createManagementHandler(manager) {
             if (req.method === "POST" && path === "/dsh-mobile/api/pairing") {
                 return json(res, 200, await manager.startPairing());
             }
+            if (req.method === "POST" && path === "/dsh-mobile/api/update") {
+                return json(res, 200, await updater.update());
+            }
             if (req.method === "DELETE" && path === "/dsh-mobile/api/pairing") {
                 return json(res, 200, await manager.removePairing());
             }
@@ -120,10 +127,10 @@ export function createManagementHandler(manager) {
         }
     };
 }
-export function registerManagementRoutes(webServer, manager) {
+export function registerManagementRoutes(webServer, manager, updater = new PluginUpdater()) {
     return webServer.register({
         kind: "prefix",
         path: "/dsh-mobile",
-        handler: createManagementHandler(manager),
+        handler: createManagementHandler(manager, updater),
     });
 }

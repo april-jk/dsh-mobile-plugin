@@ -3,6 +3,7 @@ import { readFile, readdir, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { relative, resolve, sep } from "node:path";
 import { RemoteAccessManager } from "./remote-access.js";
+import { PluginUpdater } from "./updater.js";
 
 export type WebServer = {
   register(route: {
@@ -80,7 +81,10 @@ export function isRemoteRequest(req: IncomingMessage) {
   return req.headers["x-dsh-mobile-remote"] === "1";
 }
 
-export function createManagementHandler(manager: RemoteAccessManager) {
+export function createManagementHandler(
+  manager: RemoteAccessManager,
+  updater = new PluginUpdater(),
+) {
   return async (req: IncomingMessage, res: ServerResponse) => {
     const path = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
     try {
@@ -105,6 +109,9 @@ export function createManagementHandler(manager: RemoteAccessManager) {
       ) {
         return json(res, 200, { sessions: await manager.accessSessions() });
       }
+      if (req.method === "GET" && path === "/dsh-mobile/api/update") {
+        return json(res, 200, await updater.check());
+      }
       if (
         req.method === "GET" &&
         path === "/dsh-mobile/api/browser-access"
@@ -126,6 +133,9 @@ export function createManagementHandler(manager: RemoteAccessManager) {
       if (req.method === "POST" && path === "/dsh-mobile/api/pairing") {
         return json(res, 200, await manager.startPairing());
       }
+      if (req.method === "POST" && path === "/dsh-mobile/api/update") {
+        return json(res, 200, await updater.update());
+      }
       if (req.method === "DELETE" && path === "/dsh-mobile/api/pairing") {
         return json(res, 200, await manager.removePairing());
       }
@@ -142,10 +152,11 @@ export function createManagementHandler(manager: RemoteAccessManager) {
 export function registerManagementRoutes(
   webServer: WebServer,
   manager: RemoteAccessManager,
+  updater = new PluginUpdater(),
 ) {
   return webServer.register({
     kind: "prefix",
     path: "/dsh-mobile",
-    handler: createManagementHandler(manager),
+    handler: createManagementHandler(manager, updater),
   });
 }

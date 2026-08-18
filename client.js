@@ -32,6 +32,9 @@ window.__ModuleLoader__.load({
       .dshm-entry{display:grid;grid-template-columns:minmax(130px,1fr) minmax(190px,1.4fr) auto;gap:16px;align-items:center;padding:13px 0;border-bottom:1px solid var(--dsw-alias-border-1)}
       .dshm-device{font-weight:500}.dshm-meta,.dshm-time{color:var(--dsw-alias-label-secondary);font-size:13px}.dshm-time{text-align:right;white-space:nowrap}
       .dshm-empty{color:var(--dsw-alias-label-secondary);padding:18px 0;border-top:1px solid var(--dsw-alias-border-1);border-bottom:1px solid var(--dsw-alias-border-1)}
+      .dshm-update{margin-top:24px;padding-top:18px;border-top:1px solid var(--dsw-alias-border-1)}
+      .dshm-update-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+      .dshm-update-title{font-size:15px;font-weight:600;margin:0}.dshm-update-copy{color:var(--dsw-alias-label-secondary);margin:4px 0 0}
       @media(max-width:620px){.dshm-head{display:block}.dshm-status{margin-top:10px}.dshm-grid{grid-template-columns:110px minmax(0,1fr)}.dshm-pair{grid-template-columns:1fr}.dshm-qr{width:min(220px,100%);height:auto;aspect-ratio:1}}
       @media(max-width:620px){.dshm-entry{grid-template-columns:1fr auto}.dshm-time{grid-column:1/-1;text-align:left}}
     `;
@@ -61,6 +64,8 @@ window.__ModuleLoader__.load({
       const [error, setError] = useState("");
       const [sessions, setSessions] = useState([]);
       const [logError, setLogError] = useState("");
+      const [update, setUpdate] = useState(null);
+      const [updateBusy, setUpdateBusy] = useState(false);
 
       const load = useCallback(async () => {
         try {
@@ -100,6 +105,32 @@ window.__ModuleLoader__.load({
         const timer = setInterval(() => void refresh(), 10000);
         return () => { active = false; clearInterval(timer); };
       }, [loadSessions]);
+
+      const loadUpdate = useCallback(async () => {
+        try {
+          const response = await fetch("/dsh-mobile/api/update", { cache: "no-store" });
+          if (!response.ok) throw new Error("版本检查失败");
+          setUpdate(await response.json());
+        } catch (nextError) {
+          setUpdate({ currentVersion: "未知", latestVersion: null, updateAvailable: false, checking: false, updating: false, restartRequired: false, error: nextError instanceof Error ? nextError.message : String(nextError) });
+        }
+      }, []);
+
+      useEffect(() => { void loadUpdate(); }, [loadUpdate]);
+
+      const runUpdate = async () => {
+        setUpdateBusy(true);
+        try {
+          const response = await fetch("/dsh-mobile/api/update", { method: "POST" });
+          const body = await response.json();
+          if (!response.ok) throw new Error(body.message || body.reason || "更新失败");
+          setUpdate(body);
+        } catch (nextError) {
+          setUpdate((previous) => ({ ...(previous || {}), error: nextError instanceof Error ? nextError.message : String(nextError) }));
+        } finally {
+          setUpdateBusy(false);
+        }
+      };
 
       const action = async (method) => {
         setBusy(true);
@@ -142,6 +173,17 @@ window.__ModuleLoader__.load({
           h(Row, { label: "DSH", value: state.dsh === "online" ? "运行中" : "未响应" }),
           h(Row, { label: "Relay", value: state.relay }),
           h(Row, { label: "设备 ID", value: state.deviceId || "尚未配对" }),
+        ),
+        h("div", { className: "dshm-update" },
+          h("div", { className: "dshm-update-head" },
+            h("div", null,
+              h("h3", { className: "dshm-update-title" }, "插件更新"),
+              h("p", { className: "dshm-update-copy" }, update?.checking ? "正在检查版本…" : update?.error ? "暂时无法检查更新" : update?.updateAvailable ? `发现新版本 ${update.latestVersion}` : `当前版本 ${update?.currentVersion || "未知"}`),
+            ),
+            state.localActionsAllowed && update?.updateAvailable && h("button", { className: "dshm-button primary", type: "button", disabled: updateBusy || update?.updating, onClick: () => void runUpdate() }, updateBusy || update?.updating ? "正在更新…" : "一键更新"),
+          ),
+          update?.restartRequired && h("p", { className: "dshm-note" }, "更新已安装。请重启 DSH 以加载新版本。"),
+          !state.localActionsAllowed && update?.updateAvailable && h("p", { className: "dshm-note" }, "检测到新版本，请在运行 DSH 的电脑上打开此设置页更新。"),
         ),
         state.pairing && h("div", { className: "dshm-pair" },
           h("div", { className: "dshm-qr", dangerouslySetInnerHTML: { __html: state.pairing.qrSvg } }),

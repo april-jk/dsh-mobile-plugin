@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { once } from "node:events";
 import { createManagementHandler } from "../src/management.js";
 import { RemoteAccessManager } from "../src/remote-access.js";
+import { PluginUpdater } from "../src/updater.js";
 
 test("management mutations are local-only while state remains readable", async () => {
   let pairingRequests = 0;
@@ -35,6 +36,25 @@ test("management mutations are local-only while state remains readable", async (
     assert.equal(pairing.status, 403);
     assert.equal((await pairing.json()).reason, "local_management_required");
     assert.equal(pairingRequests, 0);
+  } finally {
+    manager.dispose();
+    server.close();
+    await once(server, "close");
+  }
+});
+
+test("plugin update is local-only", async () => {
+  const manager = new RemoteAccessManager({ deviceName: "Test Mac", relay: "https://relay.test", dshPort: 3080 });
+  const updater = new PluginUpdater({ fetcher: async () => new Response(JSON.stringify({ tag_name: "v0.1.7" })) });
+  const server = createServer(createManagementHandler(manager, updater));
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  try {
+    const response = await fetch(`http://127.0.0.1:${address.port}/dsh-mobile/api/update`, { method: "POST", headers: { "x-dsh-mobile-remote": "1" } });
+    assert.equal(response.status, 403);
+    assert.equal((await response.json()).reason, "local_management_required");
   } finally {
     manager.dispose();
     server.close();

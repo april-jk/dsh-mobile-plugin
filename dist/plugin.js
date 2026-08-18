@@ -2,6 +2,7 @@ import z from "@deepseek-ai/schemastery";
 import { loadConfig, saveConfig } from "./config.js";
 import { registerManagementRoutes } from "./management.js";
 import { RemoteAccessManager } from "./remote-access.js";
+import { PluginUpdater } from "./updater.js";
 export const name = "dsh-mobile";
 export const Config = z.object({
     relay: z.string().required(),
@@ -23,7 +24,7 @@ export function apply(ctx, pluginConfig) {
                 if (disposed)
                     return;
                 manager = new RemoteAccessManager(config);
-                unregister = registerManagementRoutes(ctx.webServer, manager);
+                unregister = registerManagementRoutes(ctx.webServer, manager, new PluginUpdater());
                 await manager.initialize();
                 ctx.logger.info(config.deviceToken
                     ? `DSH mobile remote connecting through ${config.relay}`

@@ -1,6 +1,7 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
+import { PLUGIN_VERSION } from "./version.js";
 import { acceptClientHello, E2eeError, } from "./e2ee.js";
 const MAX_HTTP_REQUEST_BYTES = 2 * 1024 * 1024;
 const MAX_HTTP_RESPONSE_BYTES = 32 * 1024 * 1024;
@@ -94,7 +95,7 @@ export class RelayClient {
             capabilities: this.config.e2eeMasterKey
                 ? ["sealed-tunnel-v1"]
                 : [],
-            version: "0.1.5",
+            version: PLUGIN_VERSION,
         }))));
         ws.on("message", (raw) => {
             let value;

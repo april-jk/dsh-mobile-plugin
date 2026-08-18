@@ -2,6 +2,7 @@ import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 import { Config } from "./config.js";
+import { PLUGIN_VERSION } from "./version.js";
 import {
   acceptClientHello,
   ClientHello,
@@ -131,7 +132,7 @@ export class RelayClient {
             capabilities: this.config.e2eeMasterKey
               ? ["sealed-tunnel-v1"]
               : [],
-            version: "0.1.5",
+            version: PLUGIN_VERSION,
           }),
         ),
       ),

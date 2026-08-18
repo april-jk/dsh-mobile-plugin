@@ -5,10 +5,32 @@ import { loadConfig, saveConfig } from "./config.js";
 import { pair } from "./pairing.js";
 import { RelayClient } from "./relay-client.js";
 import { RemoteAccessManager } from "./remote-access.js";
+import { PLUGIN_VERSION } from "./version.js";
+import { PluginUpdater } from "./updater.js";
 const program = new Command()
     .name("dsh-mobile")
     .description("Remote companion for DeepSeek Harness")
-    .version("0.1.5");
+    .version(PLUGIN_VERSION);
+program
+    .command("check-update")
+    .description("Check for a newer Companion release")
+    .action(async () => {
+    const status = await new PluginUpdater().check(true);
+    console.log(JSON.stringify(status, null, 2));
+    if (status.error)
+        process.exitCode = 1;
+});
+program
+    .command("update")
+    .description("Install the latest Companion release")
+    .action(async () => {
+    const status = await new PluginUpdater().update();
+    console.log(JSON.stringify(status, null, 2));
+    if (status.error)
+        process.exitCode = 1;
+    else if (status.restartRequired)
+        console.log("Update installed. Restart DSH to load it.");
+});
 program
     .command("pair")
     .description("Pair this computer with the mobile app")
