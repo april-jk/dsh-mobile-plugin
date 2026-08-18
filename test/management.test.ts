@@ -79,3 +79,29 @@ test("local management can remove an active pairing", async () => {
     await once(server, "close");
   }
 });
+
+test("remote file browser rejects path traversal and serves its UI", async () => {
+  const manager = new RemoteAccessManager({
+    deviceName: "Test Mac",
+    relay: "https://relay.test",
+    dshPort: 3080,
+  }, { probeDsh: async () => true });
+  const server = createServer(createManagementHandler(manager));
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const base = `http://127.0.0.1:${address.port}`;
+  try {
+    const ui = await fetch(`${base}/dsh-mobile/files`);
+    assert.equal(ui.status, 200);
+    assert.match(await ui.text(), /远程文件/);
+    const traversal = await fetch(`${base}/dsh-mobile/api/files?path=${encodeURIComponent("../../etc/passwd")}`);
+    assert.equal(traversal.status, 502);
+    assert.equal((await traversal.json()).reason, "relay_unavailable");
+  } finally {
+    manager.dispose();
+    server.close();
+    await once(server, "close");
+  }
+});
