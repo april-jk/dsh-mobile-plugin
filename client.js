@@ -35,6 +35,9 @@ window.__ModuleLoader__.load({
       .dshm-update{margin-top:24px;padding-top:18px;border-top:1px solid var(--dsw-alias-border-1)}
       .dshm-update-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
       .dshm-update-title{font-size:15px;font-weight:600;margin:0}.dshm-update-copy{color:var(--dsw-alias-label-secondary);margin:4px 0 0}
+      .dshm-browser{margin-top:18px;padding-top:18px;border-top:1px solid var(--dsw-alias-border-1)}
+      .dshm-browser-qr{width:180px;height:180px;background:#fff;margin-top:12px}.dshm-browser-qr svg{display:block;width:100%;height:100%}
+      .dshm-browser-link{display:block;margin-top:10px;color:var(--dsw-alias-label-secondary);font-size:12px;overflow-wrap:anywhere}
       @media(max-width:620px){.dshm-head{display:block}.dshm-status{margin-top:10px}.dshm-grid{grid-template-columns:110px minmax(0,1fr)}.dshm-pair{grid-template-columns:1fr}.dshm-qr{width:min(220px,100%);height:auto;aspect-ratio:1}}
       @media(max-width:620px){.dshm-entry{grid-template-columns:1fr auto}.dshm-time{grid-column:1/-1;text-align:left}}
     `;
@@ -66,6 +69,8 @@ window.__ModuleLoader__.load({
       const [logError, setLogError] = useState("");
       const [update, setUpdate] = useState(null);
       const [updateBusy, setUpdateBusy] = useState(false);
+      const [browserAccess, setBrowserAccess] = useState(null);
+      const [browserBusy, setBrowserBusy] = useState(false);
 
       const load = useCallback(async () => {
         try {
@@ -129,6 +134,21 @@ window.__ModuleLoader__.load({
           setUpdate((previous) => ({ ...(previous || {}), error: nextError instanceof Error ? nextError.message : String(nextError) }));
         } finally {
           setUpdateBusy(false);
+        }
+      };
+
+      const generateBrowserAccess = async () => {
+        setBrowserBusy(true);
+        setError("");
+        try {
+          const response = await fetch("/dsh-mobile/api/browser-access", { cache: "no-store" });
+          const body = await response.json();
+          if (!response.ok) throw new Error(body.message || body.reason || "无法生成浏览器访问码");
+          setBrowserAccess(body);
+        } catch (nextError) {
+          setError(nextError instanceof Error ? nextError.message : String(nextError));
+        } finally {
+          setBrowserBusy(false);
         }
       };
 
@@ -204,6 +224,13 @@ window.__ModuleLoader__.load({
               if (window.confirm("移除配对后，手机将无法远程访问这台电脑。再次使用时需要重新扫码配对。")) void action("DELETE");
             },
           }, busy ? "正在移除…" : "移除配对"),
+          state.phase === "paired" && h("button", { className: "dshm-button", type: "button", disabled: browserBusy, onClick: () => void generateBrowserAccess() }, browserBusy ? "正在生成…" : "生成浏览器访问码"),
+        ),
+        browserAccess && h("div", { className: "dshm-browser" },
+          h("strong", null, "浏览器绑定码"),
+          h("p", { className: "dshm-note" }, "在另一台手机或浏览器中打开此链接并登录同一账号，即可新增一个浏览器访问端。密钥位于链接片段中，不会发送给 Relay。"),
+          h("div", { className: "dshm-browser-qr", dangerouslySetInnerHTML: { __html: browserAccess.qrSvg } }),
+          h("a", { className: "dshm-browser-link", href: browserAccess.qrPayload, target: "_blank", rel: "noreferrer" }, browserAccess.qrPayload),
         ),
         !state.localActionsAllowed && h("p", { className: "dshm-note" }, "远程访问时仅可查看状态。配对管理请在这台电脑上操作。"),
         error && h("p", { className: "dshm-error", role: "alert" }, error),

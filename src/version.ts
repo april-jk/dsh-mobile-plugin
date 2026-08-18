@@ -1,4 +1,4 @@
-export const PLUGIN_VERSION = "0.1.6";
+export const PLUGIN_VERSION = "0.1.7";
 export const PLUGIN_PACKAGE = "@april-jk/dsh-mobile";
 export const PLUGIN_REPOSITORY = "april-jk/dsh-mobile-plugin";
 

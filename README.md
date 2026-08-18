@@ -26,14 +26,14 @@ Requirements:
 The immutable GitHub tag is the recommended public installation path. It requires neither a global DSH installation nor a local plugin directory:
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.6"
+npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.7"
 npx @deepseek-ai/dsh web
 ```
 
 Each GitHub Release also contains a prebuilt `.tgz`. DSH can install it directly from its release URL without a manual download or local path:
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.6/april-jk-dsh-mobile-0.1.6.tgz"
+npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.7/april-jk-dsh-mobile-0.1.7.tgz"
 npx @deepseek-ai/dsh web
 ```
 
@@ -72,7 +72,7 @@ The same settings page can remove the pairing. Removal revokes the Relay device 
 - DSH remains bound to `127.0.0.1:3080`; the plugin never creates a public listener.
 - The computer opens an outbound WSS connection to `https://relay.dshmobile.online` by default. Set `DSH_RELAY` before starting DSH to use another compatible Relay.
 - HTTP, SSE, and WebSocket payloads are end-to-end encrypted between the mobile app and this Companion with AES-256-GCM. The Relay only forwards sealed frames; TLS additionally protects connection metadata in transit.
-- Version 0.1.6 uses a QR-provisioned pre-shared key and does not provide forward secrecy. Unpair a device and pair it again if the QR code or either endpoint may have been compromised.
+- Version 0.1.7 uses a QR-provisioned pre-shared key and does not provide forward secrecy. Unpair a device and pair it again if the QR code or either endpoint may have been compromised.
 - The plugin stores its Relay device token locally in `~/.dsh-remote/config.json` and never sends that token to the mobile client.
 - The Relay records bounded phone metadata and access times for the access timeline. It does not persist DSH request or response bodies.
 - Installing this bundle disables DSH's native directory picker and enables the browser-based picker so remote browsers can choose a directory without opening Finder or another native dialog.

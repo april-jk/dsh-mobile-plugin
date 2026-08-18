@@ -15,24 +15,24 @@ test("checks the official latest release and compares versions", async () => {
   const updater = new PluginUpdater({
     fetcher: async (input) => {
       requested = String(input);
-      return response({ tag_name: "v0.1.7", html_url: "https://github.com/april-jk/dsh-mobile-plugin/releases/tag/v0.1.7", body: "notes" });
+      return response({ tag_name: "v0.1.8", html_url: "https://github.com/april-jk/dsh-mobile-plugin/releases/tag/v0.1.8", body: "notes" });
     },
   });
   const state = await updater.check(true);
   assert.match(requested, /api\.github\.com\/repos\/april-jk\/dsh-mobile-plugin\/releases\/latest/);
-  assert.equal(state.currentVersion, "0.1.6");
-  assert.equal(state.latestVersion, "0.1.7");
+  assert.equal(state.currentVersion, "0.1.7");
+  assert.equal(state.latestVersion, "0.1.8");
   assert.equal(state.updateAvailable, true);
 });
 
 test("installs only a validated release tag and requires restart", async () => {
   const tags: string[] = [];
   const updater = new PluginUpdater({
-    fetcher: async () => response({ tag_name: "v0.1.7" }),
+    fetcher: async () => response({ tag_name: "v0.1.8" }),
     run: async (tag) => { tags.push(tag); },
   });
   const state = await updater.update();
-  assert.deepEqual(tags, ["v0.1.7"]);
+  assert.deepEqual(tags, ["v0.1.8"]);
   assert.equal(state.restartRequired, true);
   assert.equal(state.error, null);
 });
