@@ -4,7 +4,7 @@
 
 通过只建立出站连接的 Relay，让已配对手机远程访问电脑本地的 DeepSeek Harness Web UI。
 
-> **非官方社区项目：** 本项目由社区独立开发和维护，未经 DeepSeek 审核、推荐或支持。
+> **DeepSeek Harness 插件投稿项目：** 本插件已向 DeepSeek Harness 官方插件仓库提交，并已发布到官方社区的插件展示区。
 
 **完整项目、已签名 Android APK 和 Relay 私有部署包：** [DSH Mobile Suite](https://github.com/april-jk/dsh-mobile-suite)
 
@@ -85,7 +85,7 @@ DSH_RELAY=https://relay.example.com npx @deepseek-ai/dsh web
 
 ## 独立命令
 
-后备 CLI 安装为 `dsh-mobile`，支持 `start`、`pair`、`status`、`check-update`、`update` 和 `unpair`。DSH 设置页会定期检查官方 Release；发现新版本时，可以在运行 DSH 的电脑上点击“一键更新”。更新完成后需要重启 DSH 才会加载新插件。更新请求只允许本机发起，并固定使用官方插件仓库的合法版本 Tag。
+后备 CLI 安装为 `dsh-mobile`，支持 `start`、`pair`、`status`、`check-update`、`update` 和 `unpair`。DSH 设置页会定期检查项目 Release；发现新版本时，可以在运行 DSH 的电脑上点击“一键更新”。更新完成后需要重启 DSH 才会加载新插件。更新请求只允许本机发起，并固定使用 DSH Mobile 插件仓库的合法版本 Tag。
 
 ## 开发
 
@@ -102,9 +102,9 @@ npm pack --dry-run
 
 npm 发布默认关闭。仓库维护者可以将 Actions 变量 `NPM_PUBLISH_ENABLED` 设置为 `true`，并添加拥有 `@april-jk/dsh-mobile` 发布权限的 `NPM_TOKEN` Actions Secret 来显式启用。缺少任一设置时，GitHub Release 仍会正常发布，工作流不会尝试 npm 发布。
 
-## 社区发现
+## 官方社区投稿
 
-仓库应设置 `dsh-plugin` 和 `deepseek-harness` GitHub Topic。在官方插件 Discussion 分类中，一个项目单独发布一篇帖子，标题可使用：
+仓库使用 `dsh-plugin` 和 `deepseek-harness` GitHub Topic。项目已发布到官方插件 Discussion 分类，标题为：
 
 `DSH | DSH Mobile Remote | Access your local DSH Web UI from a paired phone`
 

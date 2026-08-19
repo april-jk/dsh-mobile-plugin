@@ -1,6 +1,6 @@
 # DSH | DSH Mobile Remote | Access your local DSH Web UI from a paired phone
 
-> **Unofficial community project:** independently developed and maintained. This project is not reviewed, endorsed, or supported by DeepSeek.
+> **DeepSeek Harness plugin submission:** submitted to the official plugin repository and published in the official community plugin showcase.
 
 Project: https://github.com/april-jk/dsh-mobile-suite
 

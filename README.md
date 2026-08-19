@@ -4,7 +4,7 @@
 
 Access a local DeepSeek Harness Web UI from a paired phone through an outbound-only Relay connection.
 
-> **Community project:** this is an unofficial project, independently developed and maintained by the community. It is not reviewed, endorsed, or supported by DeepSeek.
+> **DeepSeek Harness plugin submission:** this plugin has been submitted to the official DeepSeek Harness plugin repository and is published in the official community plugin showcase.
 
 **Complete project, signed Android APK, and private Relay package:** [DSH Mobile Suite](https://github.com/april-jk/dsh-mobile-suite)
 
@@ -85,7 +85,7 @@ DSH_RELAY=https://relay.example.com npx @deepseek-ai/dsh web
 
 ## Standalone commands
 
-The fallback CLI is installed as `dsh-mobile` and supports `start`, `pair`, `status`, `check-update`, `update`, and `unpair`. The DSH settings page checks the official Release periodically and offers a one-click update on the computer running DSH. Restart DSH after an update so the new plugin is loaded. Update requests are local-only and use only validated tags from the official plugin repository.
+The fallback CLI is installed as `dsh-mobile` and supports `start`, `pair`, `status`, `check-update`, `update`, and `unpair`. The DSH settings page checks the project Release periodically and offers a one-click update on the computer running DSH. Restart DSH after an update so the new plugin is loaded. Update requests are local-only and use only validated tags from the DSH Mobile plugin repository.
 
 ## Development
 
@@ -102,9 +102,9 @@ To publish a release, update `package.json` and `package-lock.json`, rebuild `di
 
 npm publishing is disabled by default. Repository maintainers can opt in by setting the Actions variable `NPM_PUBLISH_ENABLED` to `true` and adding an `NPM_TOKEN` Actions secret with publish access to `@april-jk/dsh-mobile`. With either setting absent, GitHub Releases continue normally and no npm publish is attempted.
 
-## Community discovery
+## Official community submission
 
-The repository should use the `dsh-plugin` and `deepseek-harness` GitHub topics. A single-project post for the official plugin Discussion category can use:
+The repository uses the `dsh-plugin` and `deepseek-harness` GitHub topics. The project is published in the official plugin Discussion category with the title:
 
 `DSH | DSH Mobile Remote | Access your local DSH Web UI from a paired phone`
 
