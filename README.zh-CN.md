@@ -26,14 +26,14 @@
 推荐通过不可变的 GitHub Tag 公开安装。该方式不要求全局安装 DSH，也不需要本地插件目录：
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.7"
+npx @deepseek-ai/dsh plugin --profile web add "github:april-jk/dsh-mobile-plugin#v0.1.8"
 npx @deepseek-ai/dsh web
 ```
 
 每个 GitHub Release 也包含预构建 `.tgz`。DSH 可以直接从 Release URL 安装，不需要手动下载或填写本地路径：
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.7/april-jk-dsh-mobile-0.1.7.tgz"
+npx @deepseek-ai/dsh plugin --profile web add "https://github.com/april-jk/dsh-mobile-plugin/releases/download/v0.1.8/april-jk-dsh-mobile-0.1.8.tgz"
 npx @deepseek-ai/dsh web
 ```
 
@@ -72,7 +72,7 @@ npx @deepseek-ai/dsh web
 - DSH 始终监听 `127.0.0.1:3080`；插件不会创建公网监听端口。
 - 电脑默认向 `https://relay.dshmobile.online` 建立出站 WSS 连接。启动 DSH 前设置 `DSH_RELAY` 可以使用其他兼容 Relay。
 - HTTP、SSE 和 WebSocket 载荷由移动应用和本 Companion 使用 AES-256-GCM 进行端到端加密。Relay 只转发密封帧，TLS 额外保护传输中的连接元数据。
-- 0.1.7 使用二维码预置的共享密钥，不提供前向保密。如果二维码或任一端点可能泄露，请解除配对后重新配对。
+- 0.1.8 使用二维码预置的共享密钥，不提供前向保密。如果二维码或任一端点可能泄露，请解除配对后重新配对。
 - 插件将 Relay 设备 Token 保存在本机 `~/.dsh-remote/config.json`，不会把该 Token 发送给移动端。
 - Relay 为访问时间线记录受限的手机元数据和访问时间，但不会持久化 DSH 请求体或响应体。
 - 安装本 Bundle 后会禁用 DSH 原生目录选择器，改用浏览器目录选择器，使远程浏览器无需打开 Finder 或其他原生对话框即可选择目录。

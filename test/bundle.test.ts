@@ -12,7 +12,7 @@ test("publishes an installable DSH bundle manifest", async () => {
     "utf8",
   );
   assert.equal(manifest.name, "@april-jk/dsh-mobile");
-  assert.equal(manifest.version, "0.1.7");
+  assert.equal(manifest.version, "0.1.8");
   assert.deepEqual(manifest.bin, { "dsh-mobile": "dist/cli.js" });
   assert.equal(manifest.dsh.bundle.patch, "./cordis.patch.yml");
   assert.equal(manifest.exports["./client"], "./client.js");
@@ -56,7 +56,7 @@ test("documents a path-free official DSH install command", async () => {
   );
   assert.match(
     readme,
-    /npx @deepseek-ai\/dsh plugin --profile web add "github:april-jk\/dsh-mobile-plugin#v0\.1\.7"/,
+    /npx @deepseek-ai\/dsh plugin --profile web add "github:april-jk\/dsh-mobile-plugin#v0\.1\.8"/,
   );
   assert.doesNotMatch(readme, /\/absolute\/path/);
 });
