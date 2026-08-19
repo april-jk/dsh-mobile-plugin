@@ -7,6 +7,26 @@ const MAX_HTTP_REQUEST_BYTES = 2 * 1024 * 1024;
 const MAX_HTTP_RESPONSE_BYTES = 32 * 1024 * 1024;
 const MAX_HTTP_CHANNELS = 32;
 const MAX_WS_CHANNELS = 16;
+const HEALTH_FAILURE_THRESHOLD = 3;
+export class HealthStatusTracker {
+    current;
+    failureThreshold;
+    failures = 0;
+    constructor(current = false, failureThreshold = HEALTH_FAILURE_THRESHOLD) {
+        this.current = current;
+        this.failureThreshold = failureThreshold;
+    }
+    update(reachable) {
+        if (reachable) {
+            this.failures = 0;
+            this.current = true;
+        }
+        else if (!this.current || ++this.failures >= this.failureThreshold) {
+            this.current = false;
+        }
+        return this.current;
+    }
+}
 function message(type, payload, channel) {
     return { v: 1, type, channel, id: randomUUID(), ts: Date.now(), payload };
 }
@@ -53,6 +73,8 @@ export class RelayClient {
     stopped = false;
     authenticated = false;
     health = false;
+    healthCheckInFlight = false;
+    healthTracker = new HealthStatusTracker();
     retry = 0;
     heartbeat;
     healthTimer;
@@ -153,16 +175,24 @@ export class RelayClient {
         return headers;
     }
     async checkHealth() {
+        if (this.healthCheckInFlight)
+            return;
+        this.healthCheckInFlight = true;
         const before = this.health;
+        let reachable = false;
         try {
             const response = await fetch(`http://127.0.0.1:${this.config.dshPort}/`, {
-                signal: AbortSignal.timeout(2000),
+                signal: AbortSignal.timeout(3500),
             });
-            this.health = response.status < 500;
+            reachable = response.status < 500;
         }
         catch {
-            this.health = false;
+            reachable = false;
         }
+        finally {
+            this.healthCheckInFlight = false;
+        }
+        this.health = this.healthTracker.update(reachable);
         if (before !== this.health || this.authenticated)
             this.sendOuter("status", { dsh: this.health ? "online" : "offline" });
     }

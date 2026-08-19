@@ -7,7 +7,7 @@ import {
   encodeBase64Url,
   E2eeError,
 } from "../src/e2ee.js";
-import { localPath } from "../src/relay-client.js";
+import { HealthStatusTracker, localPath } from "../src/relay-client.js";
 
 const masterKey = encodeBase64Url(Buffer.from([...Array(32).keys()]));
 const clientRandom = encodeBase64Url(
@@ -83,6 +83,18 @@ test("accepts only origin-form local paths", () => {
   for (const value of ["", "api/tasks", "//example.com/path", "/bad\npath"]) {
     assert.throws(() => localPath(value), E2eeError);
   }
+});
+
+test("keeps DSH online through transient probe failures", () => {
+  const health = new HealthStatusTracker(false, 3);
+  assert.equal(health.update(true), true);
+  assert.equal(health.update(false), true);
+  assert.equal(health.update(false), true);
+  assert.equal(health.update(true), true);
+  assert.equal(health.update(false), true);
+  assert.equal(health.update(false), true);
+  assert.equal(health.update(false), false);
+  assert.equal(health.update(true), true);
 });
 
 test("rejects an invalid handshake proof", () => {

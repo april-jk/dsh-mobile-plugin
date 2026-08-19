@@ -35,6 +35,26 @@ const MAX_HTTP_REQUEST_BYTES = 2 * 1024 * 1024;
 const MAX_HTTP_RESPONSE_BYTES = 32 * 1024 * 1024;
 const MAX_HTTP_CHANNELS = 32;
 const MAX_WS_CHANNELS = 16;
+const HEALTH_FAILURE_THRESHOLD = 3;
+
+export class HealthStatusTracker {
+  private failures = 0;
+
+  constructor(
+    private current = false,
+    private readonly failureThreshold = HEALTH_FAILURE_THRESHOLD,
+  ) {}
+
+  update(reachable: boolean) {
+    if (reachable) {
+      this.failures = 0;
+      this.current = true;
+    } else if (!this.current || ++this.failures >= this.failureThreshold) {
+      this.current = false;
+    }
+    return this.current;
+  }
+}
 
 function message(type: string, payload: any, channel?: string): Envelope {
   return { v: 1, type, channel, id: randomUUID(), ts: Date.now(), payload };
@@ -84,6 +104,8 @@ export class RelayClient {
   private stopped = false;
   private authenticated = false;
   private health = false;
+  private healthCheckInFlight = false;
+  private readonly healthTracker = new HealthStatusTracker();
   private retry = 0;
   private heartbeat?: NodeJS.Timeout;
   private healthTimer?: NodeJS.Timeout;
@@ -195,15 +217,21 @@ export class RelayClient {
   }
 
   private async checkHealth() {
+    if (this.healthCheckInFlight) return;
+    this.healthCheckInFlight = true;
     const before = this.health;
+    let reachable = false;
     try {
       const response = await fetch(`http://127.0.0.1:${this.config.dshPort}/`, {
-        signal: AbortSignal.timeout(2000),
+        signal: AbortSignal.timeout(3500),
       });
-      this.health = response.status < 500;
+      reachable = response.status < 500;
     } catch {
-      this.health = false;
+      reachable = false;
+    } finally {
+      this.healthCheckInFlight = false;
     }
+    this.health = this.healthTracker.update(reachable);
     if (before !== this.health || this.authenticated)
       this.sendOuter("status", { dsh: this.health ? "online" : "offline" });
   }
