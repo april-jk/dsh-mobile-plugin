@@ -37,6 +37,23 @@ const MAX_HTTP_CHANNELS = 32;
 const MAX_WS_CHANNELS = 16;
 const HEALTH_FAILURE_THRESHOLD = 3;
 
+/**
+ * Single-frame ceiling enforced by the Relay's WebSocketServer
+ * (`MAX_WS_PAYLOAD_BYTES`, default 4 MiB). A frame above this limit makes the
+ * Relay close `/device` with 1009, which used to tear down every phone tunnel
+ * at once; outbound frames are length-checked against it instead.
+ */
+export const RELAY_WS_PAYLOAD_LIMIT_BYTES = 4 * 1024 * 1024;
+const RELAY_WS_PAYLOAD_MARGIN_BYTES = 16 * 1024;
+
+/**
+ * Half-open connection watchdog. The Relay answers every `ping` with a `pong`,
+ * so inbound silence beyond this window means the socket is dead even though it
+ * never emitted `close` (fake-IP transparent proxies commonly swallow the FIN).
+ */
+export const RELAY_INBOUND_QUIET_TIMEOUT_MS = 75_000;
+export const RELAY_INBOUND_QUIET_TICK_MS = 10_000;
+
 export class HealthStatusTracker {
   private failures = 0;
 
@@ -58,6 +75,11 @@ export class HealthStatusTracker {
 
 function message(type: string, payload: any, channel?: string): Envelope {
   return { v: 1, type, channel, id: randomUUID(), ts: Date.now(), payload };
+}
+
+/** Bytes the serialized frame occupies on the wire, including base64 growth. */
+export function frameLength(type: string, payload: any, channel?: string) {
+  return JSON.stringify(message(type, payload, channel)).length;
 }
 
 function isEnvelope(value: unknown): value is Envelope {
@@ -109,6 +131,9 @@ export class RelayClient {
   private retry = 0;
   private heartbeat?: NodeJS.Timeout;
   private healthTimer?: NodeJS.Timeout;
+  /** Rebuilt by every inbound frame, including the Relay's `pong` replies. */
+  private lastInboundAt = 0;
+  private watchdog?: NodeJS.Timeout;
   private secureSessions = new Map<string, SecureCipher>();
   private localSockets = new Map<string, LocalSocket>();
   private localRequests = new Map<string, LocalRequest>();
@@ -130,6 +155,7 @@ export class RelayClient {
     this.stopped = true;
     clearInterval(this.heartbeat);
     clearInterval(this.healthTimer);
+    clearInterval(this.watchdog);
     this.ws?.close();
     this.closeAllSessions();
   }
@@ -160,6 +186,7 @@ export class RelayClient {
       ),
     );
     ws.on("message", (raw) => {
+      this.noteInbound();
       let value: unknown;
       try {
         value = JSON.parse(raw.toString());
@@ -173,6 +200,7 @@ export class RelayClient {
     ws.on("close", () => {
       this.authenticated = false;
       clearInterval(this.heartbeat);
+      clearInterval(this.watchdog);
       this.closeAllSessions();
       if (!this.stopped) {
         const schedule = [1000, 2000, 5000, 10000, 30000];
@@ -182,11 +210,54 @@ export class RelayClient {
       }
     });
     ws.on("error", () => undefined);
+    this.noteInbound();
+    this.watchdog = setInterval(
+      () => this.checkInboundSilence(),
+      RELAY_INBOUND_QUIET_TICK_MS,
+    );
+  }
+
+  private noteInbound() {
+    this.lastInboundAt = Date.now();
+  }
+
+  /**
+   * A half-open Relay socket never emits `close`, so `authenticated` stayed true
+   * forever and every phone `ws_open` was forwarded into a dead socket (observed
+   * as a stream of exactly-10s `ws_open_ok` timeouts on the Relay). Terminating
+   * the socket reuses the existing close path: backoff reconnect plus
+   * `authenticated = false`.
+   */
+  private checkInboundSilence() {
+    if (this.stopped) return;
+    const state = this.ws?.readyState;
+    const pending =
+      state === WebSocket.CONNECTING || state === WebSocket.OPEN;
+    if (!pending || !this.lastInboundAt) return;
+    if (Date.now() - this.lastInboundAt < RELAY_INBOUND_QUIET_TIMEOUT_MS) return;
+    console.log(
+      `Relay silent for ${Math.round(
+        (Date.now() - this.lastInboundAt) / 1000,
+      )}s; forcing reconnect`,
+    );
+    this.lastInboundAt = 0;
+    this.ws?.terminate();
   }
 
   private sendOuter(type: string, payload: any) {
     if (this.ws?.readyState !== WebSocket.OPEN) return false;
-    this.ws.send(JSON.stringify(message(type, payload)));
+    const frame = JSON.stringify(message(type, payload));
+    if (
+      Buffer.byteLength(frame) >
+      RELAY_WS_PAYLOAD_LIMIT_BYTES - RELAY_WS_PAYLOAD_MARGIN_BYTES
+    ) {
+      console.error(
+        `Dropped ${type} frame: ${Buffer.byteLength(frame)} bytes exceeds the ` +
+          `Relay single-frame limit of ${RELAY_WS_PAYLOAD_LIMIT_BYTES} bytes`,
+      );
+      return false;
+    }
+    this.ws.send(frame);
     return true;
   }
 
@@ -245,6 +316,11 @@ export class RelayClient {
       );
       this.sendOuter("status", { dsh: this.health ? "online" : "offline" });
       this.heartbeat = setInterval(() => this.sendOuter("ping", {}), 25000);
+      return;
+    }
+    if (msg.type === "pong") {
+      // Keep-alive answered: the half-open watchdog measures real liveness.
+      this.noteInbound();
       return;
     }
     if (msg.type === "client_hello") return this.acceptSession(msg.payload);
