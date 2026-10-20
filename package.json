@@ -36,7 +36,9 @@
     "dist",
     "client.js",
     "cordis.patch.yml",
-    "README.md"
+    "README.md",
+    "README.pl.md",
+    "README.zh-CN.md"
   ],
   "dsh": {
     "bundle": {

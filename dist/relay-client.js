@@ -1,6 +1,7 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
+import { withDshCookie } from "./dsh-browser-cookie.js";
 import { PLUGIN_VERSION } from "./version.js";
 import { acceptClientHello, E2eeError, } from "./e2ee.js";
 const MAX_HTTP_REQUEST_BYTES = 2 * 1024 * 1024;
@@ -172,7 +173,7 @@ export class RelayClient {
         delete headers["x-forwarded-proto"];
         delete headers["x-dsh-mobile-remote"];
         headers["x-dsh-mobile-remote"] = "1";
-        return headers;
+        return withDshCookie(headers, this.config.dshPort);
     }
     async checkHealth() {
         if (this.healthCheckInFlight)

@@ -1,6 +1,6 @@
 # DSH Mobile Remote
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+[English](README.md) | [Polski](README.pl.md) | [简体中文](README.zh-CN.md)
 
 通过只建立出站连接的 Relay，让已配对手机远程访问电脑本地的 DeepSeek Harness Web UI。
 
@@ -66,6 +66,12 @@ npx @deepseek-ai/dsh web
 在本机 DSH Web UI 中打开 **Settings > Remote Access**，使用 iPhone 相机或移动应用扫描二维码。新二维码会直接打开 Relay 浏览器客户端；一次性配对码和端到端加密密钥位于 URL fragment 中，不会随页面请求发送给 Relay。仅输入六位配对码不足以完成安全配对。后续启动 DSH 时，会复用保存在 `~/.dsh-remote/config.json` 中的设备凭据；该文件仅允许当前用户读取。
 
 同一设置页可以移除配对。移除操作会撤销 Relay 设备凭据、断开正在进行的远程访问，并且只在 Relay 确认后清除本地凭据。Web UI 不可用时，可以执行 `dsh-mobile unpair` 完成相同操作。
+
+## 界面语言与主题
+
+插件设置页支持英语、波兰语和简体中文，默认跟随系统或浏览器语言，不支持的语言回退为英语。可在该页面的“语言”选择器中选择“系统 / 浏览器”、“English”、“Polski”或“简体中文”。浏览器允许本地存储时，语言偏好仅保存在当前浏览器中，不会更改账号、配对或凭据。
+
+远程文件页不再提供独立的语言或主题开关。移动应用会使用所选语言和浅色/深色主题打开该页，两项设置均来自应用。日期、时间和文件大小使用所选语言格式；设备名称、路径、文件内容、URL 和技术代码不会翻译。
 
 ## 网络和数据行为
 

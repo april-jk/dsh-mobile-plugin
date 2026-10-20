@@ -1,6 +1,6 @@
 # DSH Mobile Remote
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+[English](README.md) | [Polski](README.pl.md) | [简体中文](README.zh-CN.md)
 
 Access a local DeepSeek Harness Web UI from a paired phone through an outbound-only Relay connection.
 
@@ -66,6 +66,12 @@ npx @deepseek-ai/dsh web
 Open **Settings > Remote Access** in the local DSH Web UI and scan the QR code with iPhone Camera or the mobile app. New QR codes open the Relay browser client directly; their one-time code and end-to-end encryption key stay in the URL fragment and are not sent in the page request. A six-digit code by itself is not sufficient. Later DSH starts reuse the device credential stored in `~/.dsh-remote/config.json` with owner-only permissions.
 
 The same settings page can remove the pairing. Removal revokes the Relay device credential, disconnects active remote access, and clears the local credential only after the Relay confirms the operation. The `dsh-mobile unpair` command provides the same behavior when the Web UI is unavailable.
+
+## Interface language and theme
+
+The plugin settings page supports English, Polish, and Simplified Chinese. It uses the system/browser language by default, with English for unsupported languages. Use the **Language** selector there to choose **System / browser**, **English**, **Polski**, or **简体中文**. The preference is stored only in that browser when local storage is available; it does not change accounts, pairing, or credentials.
+
+The remote-files page has no language or theme switch of its own. The mobile app opens it with the chosen language and light/dark theme, so both settings always come from the app. Dates, times, and file sizes follow the selected locale. Device names, paths, file contents, URLs, and technical codes are not translated.
 
 ## Network and data behavior
 
